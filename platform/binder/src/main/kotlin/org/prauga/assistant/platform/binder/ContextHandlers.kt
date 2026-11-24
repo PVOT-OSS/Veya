@@ -12,11 +12,13 @@ object ContextHandlers {
         context: Context,
         engine: ContextEngine,
         readiness: ContextReadiness,
+        vocabulary: VocabularySource,
+        grants: IntegrationGrants,
     ): List<IntentHandler> {
         val replies = ContextReplies(context, engine, readiness)
         return listOf(
             ContextSearchHandler(context, replies),
-            VocabularyHandler(context, engine, replies),
+            VocabularyHandler(context, vocabulary, grants, replies),
         )
     }
 }

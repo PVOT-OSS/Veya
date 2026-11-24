@@ -31,7 +31,9 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class ContextHandlersTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
-    private val engine = ContextEngine({ ContextGrant(true, Sensitivity.SENSITIVE) })
+    private val grants = IntegrationGrants(context)
+    private val vocabulary = VocabularyStore(context)
+    private val engine = ContextEngine(grants)
     private var enabled = true
     private val readiness =
         object : ContextReadiness {
@@ -41,7 +43,7 @@ class ContextHandlersTest {
         }
     private val intents =
         IntentEngine(
-            ContextHandlers.create(context, engine, readiness),
+            ContextHandlers.create(context, engine, readiness, vocabulary, grants),
             object : PlatformGate {
                 override val sdkInt = 35
 
@@ -112,8 +114,17 @@ class ContextHandlersTest {
             metadata = mapOf("unread" to isUnread.toString()),
         )
 
+    private fun install(provider: ContextProvider, connected: Boolean = true) {
+        val descriptor = provider.descriptor
+        grants.set(descriptor.packageName, ContextGrant(true, Sensitivity.SENSITIVE))
+        vocabulary.put(
+            AppVocabulary(descriptor.packageName, descriptor.label, descriptor.vocabulary)
+        )
+        if (connected) engine.register(provider)
+    }
+
     private fun registerApps() {
-        engine.register(
+        install(
             app(
                 "org.prauga.messages",
                 "Messages",
@@ -124,7 +135,7 @@ class ContextHandlersTest {
                 ),
             )
         )
-        engine.register(
+        install(
             app(
                 "org.prauga.notes",
                 "Notes",
@@ -195,7 +206,7 @@ class ContextHandlersTest {
     @Test
     fun learnsNewAppsWithoutAnUpdate() {
         assertEquals(Resolution.NoMatch, intents.resolve("show my recordings"))
-        engine.register(
+        install(
             app(
                 "org.prauga.recorder",
                 "Recorder",
@@ -217,6 +228,24 @@ class ContextHandlersTest {
         )
         assertTrue(reply("show my recordings").contains("Standup (Recorder)"))
         assertTrue(reply("voice notes about standup").contains("Standup"))
+    }
+
+    @Test
+    fun understandsAnAppsWordsWhileItIsDisconnected() {
+        install(
+            app("org.prauga.messages", "Messages", listOf(messageType), emptyList()),
+            connected = false,
+        )
+        assertEquals(VocabularyHandler.ID, resolve("any new texts")?.match?.intentId)
+        assertEquals(context.getString(R.string.context_unreachable), reply("any new texts"))
+    }
+
+    @Test
+    fun ignoresTheWordsOfAppsTheUserTurnedOff() {
+        registerApps()
+        grants.set("org.prauga.notes", ContextGrant(false, Sensitivity.PERSONAL))
+        assertEquals(Resolution.NoMatch, intents.resolve("my memos"))
+        assertEquals(VocabularyHandler.ID, resolve("any new texts")?.match?.intentId)
     }
 
     @Test

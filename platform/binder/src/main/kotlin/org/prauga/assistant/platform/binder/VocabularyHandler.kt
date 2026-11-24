@@ -4,8 +4,7 @@
 package org.prauga.assistant.platform.binder
 
 import android.content.Context
-import org.prauga.assistant.context.ContextEngine
-import org.prauga.assistant.context.ContextProvider
+import org.prauga.assistant.context.ContextGrant
 import org.prauga.assistant.context.ContextQuery
 import org.prauga.assistant.intent.IntentDescriptor
 import org.prauga.assistant.intent.IntentHandler
@@ -15,13 +14,15 @@ import org.prauga.assistant.intent.Utterance
 
 internal class VocabularyHandler(
     context: Context,
-    private val engine: ContextEngine,
+    private val vocabulary: VocabularySource,
+    private val grants: IntegrationGrants,
     private val replies: ContextReplies,
 ) : IntentHandler {
     override val descriptor = IntentDescriptor(ID, context.getString(R.string.intent_app_data))
 
     private class Index(
-        val source: Map<String, ContextProvider>,
+        val apps: Map<String, AppVocabulary>,
+        val granted: Map<String, ContextGrant>,
         val types: Map<String, Set<String>>,
         val flags: Map<String, Set<String>>,
         val patterns: List<Pattern>,
@@ -82,27 +83,30 @@ internal class VocabularyHandler(
     }
 
     private fun currentIndex(): Index? {
-        val providers = engine.providers.value
+        val apps = vocabulary.apps.value
+        val granted = grants.all.value
         index?.let {
-            if (it.source === providers) return it.takeIf { built -> built.types.isNotEmpty() }
+            if (it.apps === apps && it.granted === granted)
+                return it.takeIf { built -> built.types.isNotEmpty() }
         }
-        val built = build(providers)
+        val built = build(apps, granted)
         index = built
         return built.takeIf { it.types.isNotEmpty() }
     }
 
-    private fun build(providers: Map<String, ContextProvider>): Index {
+    private fun build(apps: Map<String, AppVocabulary>, granted: Map<String, ContextGrant>): Index {
         val types = HashMap<String, MutableSet<String>>()
         val flags = HashMap<String, MutableSet<String>>()
-        providers.values.forEach { provider ->
-            provider.descriptor.vocabulary.forEach { type ->
+        apps.values.forEach { app ->
+            if (granted[app.packageName]?.enabled != true) return@forEach
+            app.types.forEach { type ->
                 type.synonyms.forEach { types.getOrPut(it) { HashSet() } += type.id }
                 type.flags.forEach { flag ->
                     flag.synonyms.forEach { flags.getOrPut(it) { HashSet() } += flag.key }
                 }
             }
         }
-        if (types.isEmpty()) return Index(providers, emptyMap(), emptyMap(), emptyList())
+        if (types.isEmpty()) return Index(apps, granted, emptyMap(), emptyMap(), emptyList())
         val typeAlternation = alternation(types.keys)
         val flagAlternation = if (flags.isEmpty()) NEVER else alternation(flags.keys)
         val messageTypes = MESSAGE_WORDS.any { it in types }
@@ -133,7 +137,7 @@ internal class VocabularyHandler(
                     Pattern(Regex("(?:(?:$FILLER) )*(?<$FLAG>$flagAlternation)"), listOf(FLAG))
                 else null,
             )
-        return Index(providers, types, flags, patterns)
+        return Index(apps, granted, types, flags, patterns)
     }
 
     private fun alternation(words: Set<String>): String =

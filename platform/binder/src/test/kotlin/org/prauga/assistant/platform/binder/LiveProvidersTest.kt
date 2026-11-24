@@ -37,6 +37,7 @@ class LiveProvidersTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val grants = IntegrationGrants(context)
     private val engine = ContextEngine(grants)
+    private val vocabulary = VocabularyStore(context)
     private val messages =
         ProviderComponent(
             "org.prauga.messages",
@@ -55,6 +56,7 @@ class LiveProvidersTest {
                 binder,
                 engine,
                 grants,
+                vocabulary,
                 backgroundScope,
                 dispatcher,
                 { now },
@@ -89,6 +91,7 @@ class LiveProvidersTest {
             type.synonyms,
         )
         assertEquals(listOf("new", "unread"), type.flags.single().synonyms)
+        assertEquals(listOf(type), vocabulary.apps.value.getValue("org.prauga.messages").types)
         assertEquals("sam", remote.lastQuery?.text)
     }
 
@@ -149,6 +152,7 @@ class LiveProvidersTest {
         runCurrent()
         assertTrue(engine.providers.value.isEmpty())
         assertTrue(live.available.value.isEmpty())
+        assertTrue(vocabulary.apps.value.isEmpty())
     }
 
     @Test

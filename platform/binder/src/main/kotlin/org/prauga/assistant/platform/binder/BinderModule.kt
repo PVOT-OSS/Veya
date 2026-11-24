@@ -53,17 +53,23 @@ object BinderModule {
         @ApplicationContext context: Context,
         engine: ContextEngine,
         grants: IntegrationGrants,
+        vocabulary: VocabularyStore,
     ): LiveProviders =
         LiveProviders(
             directory = PackageManagerDirectory(context.packageManager, context.packageName),
             binder = ContextProviderBinder(context),
             engine = engine,
             grants = grants,
+            vocabulary = vocabulary,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
             io = Dispatchers.IO,
         )
 
     @Provides fun contextWarmUp(live: LiveProviders): ContextWarmUp = live
+
+    @Provides
+    @Singleton
+    fun vocabularyStore(@ApplicationContext context: Context) = VocabularyStore(context)
 
     @Provides
     @Singleton

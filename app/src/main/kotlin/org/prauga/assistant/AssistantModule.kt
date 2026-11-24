@@ -26,6 +26,7 @@ import org.prauga.assistant.platform.android.DeviceHandlers
 import org.prauga.assistant.platform.binder.ContextHandlers
 import org.prauga.assistant.platform.binder.IntegrationGrants
 import org.prauga.assistant.platform.binder.LiveProviders
+import org.prauga.assistant.platform.binder.VocabularyStore
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class IoDispatcher
 
@@ -49,9 +50,12 @@ object AssistantModule {
         @ApplicationContext context: Context,
         contextEngine: ContextEngine,
         live: LiveProviders,
+        vocabulary: VocabularyStore,
+        grants: IntegrationGrants,
     ): IntentEngine =
         IntentEngine(
-            DeviceHandlers.create(context) + ContextHandlers.create(context, contextEngine, live),
+            DeviceHandlers.create(context) +
+                ContextHandlers.create(context, contextEngine, live, vocabulary, grants),
             AndroidPlatformGate(context),
         )
 

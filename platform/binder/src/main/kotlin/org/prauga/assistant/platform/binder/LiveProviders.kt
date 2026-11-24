@@ -38,6 +38,7 @@ class LiveProviders(
     private val binder: ProviderBinder,
     private val engine: ContextEngine,
     private val grants: IntegrationGrants,
+    private val vocabulary: VocabularyStore?,
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher,
     private val clock: () -> Long = System::currentTimeMillis,
@@ -56,6 +57,7 @@ class LiveProviders(
     fun start() {
         scope.launch {
             discovered.value = withContext(io) { directory.discover() }
+            vocabulary?.retainOnly(discovered.value.mapTo(HashSet()) { it.packageName })
             grants.all.collect { reconcile() }
         }
         scope.launch {
@@ -69,6 +71,7 @@ class LiveProviders(
     fun refreshDirectory() {
         scope.launch {
             discovered.value = withContext(io) { directory.discover() }
+            vocabulary?.retainOnly(discovered.value.mapTo(HashSet()) { it.packageName })
             reconcile()
         }
     }
@@ -158,6 +161,9 @@ class LiveProviders(
                 return
             }
         if (connections[component.packageName] !== connection) return
+        vocabulary?.put(
+            AppVocabulary(component.packageName, component.label, descriptor.vocabulary)
+        )
         val provider = RemoteContextProvider(descriptor, remote, io, clock)
         connection.provider = provider
         engine.register(provider)
