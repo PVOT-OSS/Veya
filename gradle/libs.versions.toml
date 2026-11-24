@@ -41,6 +41,7 @@ pvot-core-ui = { group = "com.prauga.pvot", name = "core-ui", version.ref = "pvo
 pvot-design-system = { group = "com.prauga.pvot", name = "design-system", version.ref = "pvot" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }

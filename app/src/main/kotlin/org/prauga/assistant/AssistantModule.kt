@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import org.prauga.assistant.core.Assistant
 import org.prauga.assistant.core.ConversationStore
 import org.prauga.assistant.intent.IntentEngine
-import org.prauga.assistant.memory.RoomConversationStore
+import org.prauga.assistant.memory.MemoryEngine
 import org.prauga.assistant.platform.android.AndroidPlatformGate
 import org.prauga.assistant.platform.android.DeviceHandlers
 
@@ -27,8 +27,12 @@ import org.prauga.assistant.platform.android.DeviceHandlers
 object AssistantModule {
     @Provides
     @Singleton
-    fun conversationStore(@ApplicationContext context: Context): ConversationStore =
-        RoomConversationStore.create(context)
+    fun memoryEngine(@ApplicationContext context: Context): MemoryEngine =
+        MemoryEngine.create(context)
+
+    @Provides
+    @Singleton
+    fun conversationStore(memory: MemoryEngine): ConversationStore = memory.conversations
 
     @Provides
     @Singleton

@@ -10,15 +10,18 @@ plugins {
 android {
     namespace = "org.prauga.assistant.memory"
     testOptions { unitTests.isIncludeAndroidResources = true }
+    sourceSets { getByName("test").assets.directories.add("$projectDir/schemas") }
 }
 
 room { schemaDirectory("$projectDir/schemas") }
 
 dependencies {
     api(project(":assistant-core"))
+    api(project(":context-engine"))
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.room.testing)
 }

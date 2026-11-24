@@ -61,9 +61,6 @@ internal constructor(
     }
 
     companion object {
-        fun create(context: Context): RoomConversationStore =
-            RoomConversationStore(MemoryDatabase.build(context))
-
         internal fun inMemory(context: Context, newId: () -> String): RoomConversationStore =
             RoomConversationStore(MemoryDatabase.inMemory(context), newId)
     }
