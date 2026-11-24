@@ -42,6 +42,15 @@ couple = 2
 a couple = 2
 a couple of = 2
 
+[values number.scale]
+hundred = 100
+thousand = 1000
+million = 1000000
+billion = 1000000000
+
+[words number.and]   # "two hundred and five"
+and
+
 [values number.tens]
 twenty = 20
 thirty = 30
@@ -333,3 +342,35 @@ in | on | with | using | via | through
 [intent command.text]
 0.95 (text|message|sms)( to)? {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?
 0.95 send (a )?(text|message|sms) to {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?
+
+# ---------------------------------------------------------------------------------------------
+# Built-in answers: arithmetic. Symbols (+ - × ÷ * / ^ % ( )) work in every language.
+# ---------------------------------------------------------------------------------------------
+
+[words math.plus]
+plus | add
+[words math.minus]
+minus | less | take away
+[words math.times]
+times | multiplied by | x
+[words math.divide]
+divided by | over
+[words math.power]
+to the power of | to the power | raised to the power of | raised to
+[words math.percent]
+percent | per cent
+[words math.of]
+of
+[words math.root]
+square root of | root of | sqrt
+[words math.squared]
+squared
+[words math.cubed]
+cubed
+[words math.filler]
+the
+
+[intent math.calculate]
+0.95 (what's|what is|whats|calculate|compute|how much is|work out|solve|evaluate)( the)? {subject}
+0.7 {subject}
+

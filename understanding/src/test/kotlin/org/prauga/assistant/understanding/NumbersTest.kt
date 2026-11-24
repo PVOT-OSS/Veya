@@ -27,6 +27,12 @@ class NumbersTest {
                 "an" to 1.0,
                 "half" to 0.5,
                 "couple" to 2.0,
+                "two hundred" to 200.0,
+                "a hundred and five" to 105.0,
+                "two thousand three hundred and five" to 2305.0,
+                "five hundred thousand" to 500_000.0,
+                "3 million" to 3_000_000.0,
+                "twenty five thousand" to 25_000.0,
             )
         cases.forEach { (text, value) ->
             assertEquals(text, value, numbers.parse(text) ?: Double.NaN, 1e-9)

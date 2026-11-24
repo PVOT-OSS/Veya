@@ -184,6 +184,9 @@ class LexiconTest {
                 "messages from sam",
                 "what did sam say",
                 "unread",
+                "what's 18% of 240",
+                "2+2",
+                "square root of 81",
             )
         val ids =
             listOf(
@@ -210,6 +213,7 @@ class LexiconTest {
                 "command.event",
                 "command.call",
                 "command.text",
+                "math.calculate",
             )
         var matched = 0
         ids.forEach { id ->

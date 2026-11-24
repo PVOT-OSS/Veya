@@ -4,6 +4,7 @@
 package org.prauga.assistant.platform.android
 
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -78,5 +79,27 @@ class DeviceHandlersTest {
         assertTrue(
             (time.handler.execute(time.match) as IntentOutcome.Reply).text.startsWith("It's ")
         )
+    }
+
+    @Test
+    fun answersArithmeticExactly() {
+        fun answer(text: String): String {
+            val candidate = (engine.resolve(text) as Resolution.Matched).candidate
+            return runBlocking {
+                (candidate.handler.execute(candidate.match) as IntentOutcome.Reply).text
+            }
+        }
+        assertEquals("18% of 240 = 43.2", answer("What's 18% of 240?"))
+        assertEquals("(2 + 3) × 4 = 20", answer("(2 + 3) × 4"))
+        assertEquals("0.1 + 0.2 = 0.3", answer("0.1 + 0.2"))
+        assertEquals("square root of 81 = 9", answer("what is the square root of 81"))
+        assertEquals("1000 * 1000 = 1,000,000", answer("1000 * 1000"))
+    }
+
+    @Test
+    fun aPlainNumberOrOtherCommandIsNotArithmetic() {
+        assertEquals("app.open", intentOf("open camera"))
+        assertEquals(Resolution.NoMatch, engine.resolve("42"))
+        assertEquals("device.battery", intentOf("battery 50%"))
     }
 }

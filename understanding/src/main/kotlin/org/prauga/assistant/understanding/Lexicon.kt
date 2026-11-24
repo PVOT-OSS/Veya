@@ -69,6 +69,9 @@ private constructor(
             }
         }
 
+    /** Like [table], but empty when no loaded language has the list. */
+    fun optional(name: String): WordTable = if (name in tables) table(name) else WordTable.EMPTY
+
     fun words(name: String): Set<String> = table(name).keys
 
     fun has(name: String): Boolean = name in tables
