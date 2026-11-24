@@ -159,6 +159,7 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
                     if (it.fromUser) Message.user(it.text) else Message.model(it.text)
                 },
             samplerConfig = samplerConfig,
+            maxOutputToken = sampling?.maxOutputTokens,
         )
     }
 
