@@ -5,6 +5,7 @@ package org.prauga.assistant.platform.android.handlers
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
 import androidx.annotation.StringRes
 import org.prauga.assistant.intent.IntentDescriptor
@@ -82,7 +83,11 @@ class OpenSettingsHandler(private val context: Context, private val launcher: Ac
             listOf("location", "gps"),
         ),
         NOTIFICATIONS(
-            Settings.ACTION_ALL_APPS_NOTIFICATION_SETTINGS,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Settings.ACTION_ALL_APPS_NOTIFICATION_SETTINGS
+            } else {
+                Settings.ACTION_SETTINGS
+            },
             R.string.settings_page_notifications,
             listOf("notification", "notifications"),
         ),

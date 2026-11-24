@@ -6,6 +6,7 @@ package org.prauga.assistant.platform.android.handlers
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import org.prauga.assistant.intent.IntentDescriptor
 import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
@@ -47,8 +48,16 @@ class OpenAppHandler(private val context: Context, private val launcher: Activit
     private fun launchableApps(): List<LaunchableApp> {
         val packageManager = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        return packageManager
-            .queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(0))
+        val activities =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.queryIntentActivities(
+                    launcherIntent,
+                    PackageManager.ResolveInfoFlags.of(0),
+                )
+            } else {
+                @Suppress("DEPRECATION") packageManager.queryIntentActivities(launcherIntent, 0)
+            }
+        return activities
             .map {
                 LaunchableApp(it.loadLabel(packageManager).toString(), it.activityInfo.packageName)
             }
