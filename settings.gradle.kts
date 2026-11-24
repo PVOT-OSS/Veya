@@ -45,4 +45,6 @@ include(":inference:api")
 
 include(":inference:litert")
 
+include(":context-engine")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }
