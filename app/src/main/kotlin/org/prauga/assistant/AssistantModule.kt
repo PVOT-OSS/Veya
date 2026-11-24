@@ -23,7 +23,7 @@ import org.prauga.assistant.memory.DonatedContextStore
 import org.prauga.assistant.memory.MemoryEngine
 import org.prauga.assistant.platform.android.AndroidPlatformGate
 import org.prauga.assistant.platform.android.DeviceHandlers
-import org.prauga.assistant.platform.binder.ContextSearchHandler
+import org.prauga.assistant.platform.binder.ContextHandlers
 import org.prauga.assistant.platform.binder.IntegrationGrants
 import org.prauga.assistant.platform.binder.LiveProviders
 
@@ -51,7 +51,7 @@ object AssistantModule {
         live: LiveProviders,
     ): IntentEngine =
         IntentEngine(
-            DeviceHandlers.create(context) + ContextSearchHandler.all(context, contextEngine, live),
+            DeviceHandlers.create(context) + ContextHandlers.create(context, contextEngine, live),
             AndroidPlatformGate(context),
         )
 
