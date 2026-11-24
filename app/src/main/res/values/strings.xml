@@ -6,10 +6,36 @@
 <resources>
     <string name="app_name">Veya</string>
 
-    <string name="home_title">Items</string>
-    <string name="home_empty">No items yet</string>
-    <string name="home_add">Add item</string>
-    <string name="home_new_item">Item %1$d</string>
-    <string name="home_error_title">Couldn\'t load items</string>
-    <string name="home_error_message">Try again in a moment.</string>
+    <string name="action_history">Conversations</string>
+    <string name="action_new_conversation">New conversation</string>
+    <string name="action_send">Send</string>
+    <string name="action_delete_conversation">Delete conversation</string>
+
+    <string name="on_device_badge">On device</string>
+    <string name="on_device_detail">Nothing you ask leaves this phone.</string>
+    <string name="reply_on_device_latency">On device · %1$d ms</string>
+    <string name="reply_on_device">On device</string>
+
+    <string name="input_hint">Ask Veya or give a command</string>
+    <string name="welcome_title">What can I do?</string>
+    <string name="welcome_body">I handle device commands right here on your phone, without a network connection.</string>
+    <string name="suggestion_battery">What\'s my battery?</string>
+    <string name="suggestion_torch">Turn on the flashlight</string>
+    <string name="suggestion_wifi">Open Wi‑Fi settings</string>
+    <string name="suggestion_time">What time is it?</string>
+    <string name="suggestion_open_camera">Open Camera</string>
+
+    <string name="unanswered">I can only handle device commands so far. Open questions need an on-device language model, which Veya doesn\'t have yet.</string>
+    <string name="clarify_title">Which did you mean?</string>
+    <string name="missing_detail">“%1$s” needs one more detail: the %2$s.</string>
+    <string name="permission_title">“%1$s” needs your permission</string>
+    <string name="permission_body">Veya asks only when a command needs it.</string>
+    <string name="permission_allow">Allow</string>
+    <string name="permission_denied">Permission not granted, so I didn\'t run that.</string>
+    <string name="dismiss">Dismiss</string>
+
+    <string name="history_title">Conversations</string>
+    <string name="history_empty">No conversations yet</string>
+    <string name="history_error_title">Couldn\'t load conversations</string>
+    <string name="history_error_message">Try again in a moment.</string>
 </resources>

@@ -33,10 +33,6 @@ rootProject.name = "Veya"
 
 include(":app")
 
-include(":core:model")
-
-include(":core:data")
-
 include(":intent-engine")
 
 include(":assistant-core")

@@ -3,31 +3,42 @@
 
 package org.prauga.assistant
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import org.prauga.assistant.home.HomeScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import org.prauga.assistant.conversation.ConversationEvent
+import org.prauga.assistant.conversation.ConversationScreen
+import org.prauga.assistant.conversation.ConversationViewModel
+import org.prauga.assistant.history.HistoryScreen
 
 @Composable
 fun AppScaffold() {
-    Scaffold(
-        containerColor = Color.Transparent,
+    val conversation: ConversationViewModel = hiltViewModel()
+    var showHistory by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = showHistory) { showHistory = false }
+    Surface(
+        Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
-    ) { padding ->
-        Box(
-            Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(top = padding.calculateTopPadding()),
-            contentAlignment = Alignment.Center,
-        ) {
-            HomeScreen()
+    ) {
+        if (showHistory) {
+            HistoryScreen(
+                onBack = { showHistory = false },
+                onOpen = { id ->
+                    conversation.onEvent(ConversationEvent.Open(id))
+                    showHistory = false
+                },
+            )
+        } else {
+            ConversationScreen(conversation, onShowHistory = { showHistory = true })
         }
     }
 }

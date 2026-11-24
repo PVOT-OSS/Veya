@@ -23,7 +23,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:data"))
+    implementation(project(":memory-engine"))
+    implementation(project(":platform:android"))
     implementation(libs.pvot.design.system)
     implementation(libs.pvot.core.ui)
     implementation(libs.androidx.core.ktx)
