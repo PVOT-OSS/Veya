@@ -10,6 +10,8 @@ plugins {
 android {
     namespace = "org.prauga.assistant"
 
+    buildFeatures { buildConfig = true }
+
     defaultConfig {
         applicationId = "org.prauga.assistant"
         versionCode = rootProject.extra["versionCode"] as Int
@@ -25,6 +27,8 @@ android {
 dependencies {
     implementation(project(":memory-engine"))
     implementation(project(":platform:android"))
+    implementation(project(":platform:binder"))
+    implementation(libs.timber)
     implementation(libs.pvot.design.system)
     implementation(libs.pvot.core.ui)
     implementation(libs.androidx.core.ktx)

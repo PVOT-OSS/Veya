@@ -41,6 +41,8 @@ include(":memory-engine")
 
 include(":platform:android")
 
+include(":platform:binder")
+
 include(":inference:api")
 
 include(":inference:litert")
