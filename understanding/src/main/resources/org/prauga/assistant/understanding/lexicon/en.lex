@@ -150,6 +150,9 @@ past | after
 [words time.to]
 to | before
 
+[values month]   # extra short forms; full names come from the platform
+sept = 9
+
 [values weekday]   # extra short forms; full names come from the platform
 tues = 2
 thur = 4
@@ -347,8 +350,8 @@ in | on | with | using | via | through
 # Built-in answers: arithmetic. Symbols (+ - × ÷ * / ^ % ( )) work in every language.
 # ---------------------------------------------------------------------------------------------
 
-[words math.plus]
-plus | add
+[words math.plus]   # not "add": that word starts calendar and contact commands
+plus
 [words math.minus]
 minus | less | take away
 [words math.times]
@@ -580,4 +583,59 @@ to | in | into | as
 0.95 how (many|much) {target} (are |is )?(there )?in {source}
 0.9 (what's|what is|whats) {source} <convert.to> {target}
 0.9 {source} <convert.to> {target}
+
+# ---------------------------------------------------------------------------------------------
+# Built-in answers: dates
+# ---------------------------------------------------------------------------------------------
+
+[words date.filler]
+the | of | on
+
+[values date.named]   # month × 100 + day
+christmas = 1225
+christmas day = 1225
+christmas eve = 1224
+new year = 101
+new year's day = 101
+new years day = 101
+new year's eve = 1231
+new years eve = 1231
+halloween = 1031
+valentine's day = 214
+valentines day = 214
+
+[words date.ordinal]   # 1st, 2nd, 3rd, 25th
+st | nd | rd | th
+
+[values date.unit.days]
+day = 1
+days = 1
+week = 7
+weeks = 7
+fortnight = 14
+fortnights = 14
+
+[values date.unit.months]
+month = 1
+months = 1
+year = 12
+years = 12
+
+[words date.in]
+in
+
+[words date.after]
+from now | from today | later | after today | hence
+
+[words date.before]
+ago | before today
+
+[intent date.until]
+0.95 how many (days|weeks|sleeps)( are)?( there)?( left)? (until|till|til|to|before) {subject}
+0.95 how long( is it| is there)? (until|till|til|to|before) {subject}
+0.95 (days|time) (until|till|left until|to) {subject}
+
+[intent date.which]
+0.95 what (date|day)( of the week)?( is it| will it be| was it| is| was| falls on)? {subject}
+0.95 when is {subject}
 

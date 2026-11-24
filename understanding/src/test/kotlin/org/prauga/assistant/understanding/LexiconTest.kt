@@ -187,6 +187,9 @@ class LexiconTest {
                 "what's 18% of 240",
                 "2+2",
                 "5 miles in km",
+                "how many days until christmas",
+                "what date is 3 weeks from now",
+                "when is halloween",
                 "how many cups in a liter",
                 "convert 212 f to celsius",
                 "square root of 81",
@@ -218,6 +221,8 @@ class LexiconTest {
                 "command.text",
                 "math.calculate",
                 "math.convert",
+                "date.until",
+                "date.which",
             )
         var matched = 0
         ids.forEach { id ->

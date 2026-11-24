@@ -4,6 +4,7 @@
 package org.prauga.assistant.understanding
 
 import java.time.DayOfWeek
+import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -139,6 +140,19 @@ private constructor(
         private const val NEVER = "(?!)"
         private const val ENGLISH = "en"
         private const val WEEKDAYS = "weekday"
+        private const val MONTHS = "month"
+        private val NAME_STYLES =
+            listOf(
+                TextStyle.FULL,
+                TextStyle.SHORT,
+                TextStyle.FULL_STANDALONE,
+                TextStyle.SHORT_STANDALONE,
+            )
+
+        /** A day or month name, or null when the platform gives only a number for it. */
+        private fun name(display: String, locale: Locale): String? =
+            display.lowercase(locale).trimEnd('.').takeUnless { text -> text.all { it.isDigit() } }
+
         private val NAME = Regex("[a-z@][a-z0-9.]*")
         private val SLOT = Regex("[a-z][a-zA-Z0-9]*")
 
@@ -175,11 +189,18 @@ private constructor(
             val intents = HashMap<String, MutableList<Template>>()
             files.forEach { parseInto(it, tables, intents) }
             val weekdays = tables.getOrPut(WEEKDAYS) { HashMap() }
+            val months = tables.getOrPut(MONTHS) { HashMap() }
             locales.distinct().forEach { locale ->
-                DayOfWeek.entries.forEach { day ->
-                    listOf(TextStyle.FULL, TextStyle.SHORT).forEach { style ->
-                        val name = day.getDisplayName(style, locale).lowercase(locale).trimEnd('.')
-                        weekdays.putIfAbsent(name, day.value.toDouble())
+                NAME_STYLES.forEach { style ->
+                    DayOfWeek.entries.forEach { day ->
+                        name(day.getDisplayName(style, locale), locale)?.let {
+                            weekdays.putIfAbsent(it, day.value.toDouble())
+                        }
+                    }
+                    Month.entries.forEach { month ->
+                        name(month.getDisplayName(style, locale), locale)?.let {
+                            months.putIfAbsent(it, month.value.toDouble())
+                        }
                     }
                 }
             }

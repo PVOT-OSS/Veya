@@ -14,6 +14,8 @@
     <string name="intent_device_info">Device information</string>
     <string name="intent_calculate">Calculate</string>
     <string name="intent_convert">Convert units</string>
+    <string name="intent_date_until">Days until a date</string>
+    <string name="intent_date_which">Find a date</string>
 
     <string name="battery_level">Battery is at %1$d%%.</string>
     <string name="battery_level_charging">Battery is at %1$d%% and charging.</string>
@@ -28,6 +30,18 @@
     <string name="calculate_undefined">That has no answer as a real number.</string>
     <string name="convert_result">%1$s is %2$s %3$s.</string>
     <string name="convert_unclear">I couldn\'t tell which units to convert between.</string>
+    <string name="date_which">That\'s %1$s.</string>
+    <string name="date_which_past">That was %1$s.</string>
+    <string name="date_until_today">%1$s is today.</string>
+    <string name="date_unclear">I couldn\'t tell which day you mean.</string>
+    <plurals name="date_until">
+        <item quantity="one">%1$s is in %2$d day, on %3$s.</item>
+        <item quantity="other">%1$s is in %2$d days, on %3$s.</item>
+    </plurals>
+    <plurals name="date_ago">
+        <item quantity="one">%1$s was %2$d day ago, on %3$s.</item>
+        <item quantity="other">%1$s was %2$d days ago, on %3$s.</item>
+    </plurals>
     <string name="app_question">Which app should I open?</string>
     <string name="app_opening">Opening %1$s.</string>
     <string name="app_not_found">I couldn\'t find an app called “%1$s”.</string>
