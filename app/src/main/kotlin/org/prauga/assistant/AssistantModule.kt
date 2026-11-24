@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.prauga.assistant.capabilities.CapabilityRepository
 import org.prauga.assistant.capabilities.CapabilityScanner
+import org.prauga.assistant.capabilities.commands.CapabilityCommands
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.core.Assistant
 import org.prauga.assistant.core.ConversationStore
@@ -67,6 +68,7 @@ object AssistantModule {
     ): IntentEngine =
         IntentEngine(
             DeviceHandlers.create(context, lexicon) +
+                CapabilityCommands.create(context, lexicon) +
                 ContextHandlers.create(context, lexicon, contextEngine, live, vocabulary, grants),
             AndroidPlatformGate(context),
             Utterance.Fillers.of(lexicon),

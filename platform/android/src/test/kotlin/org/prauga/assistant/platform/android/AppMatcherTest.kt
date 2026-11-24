@@ -38,4 +38,18 @@ class AppMatcherTest {
         assertNull(AppMatcher.best("calculator", apps))
         assertNull(AppMatcher.best("  ", apps))
     }
+
+    @Test
+    fun wholeWordsNeverMatchPartOfAWord() {
+        assertEquals("org.prauga.messages", AppMatcher.best("mess", apps)?.packageName)
+        assertNull(AppMatcher.best("mess", apps, wholeWords = true))
+        assertEquals(
+            "com.google.android.apps.maps",
+            AppMatcher.best("google maps", apps, wholeWords = true)?.packageName,
+        )
+        assertEquals(
+            "org.prauga.cameraprobe",
+            AppMatcher.best("probe", apps, wholeWords = true)?.packageName,
+        )
+    }
 }

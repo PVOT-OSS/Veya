@@ -6,11 +6,23 @@ package org.prauga.assistant.platform.android.handlers
 data class LaunchableApp(val label: String, val packageName: String)
 
 object AppMatcher {
-    fun best(query: String, apps: List<LaunchableApp>): LaunchableApp? {
+    /**
+     * The app [query] names best. With [wholeWords], the query must be the whole label or whole
+     * words of it, so "sam" never names "Samsung Calendar".
+     */
+    fun best(
+        query: String,
+        apps: List<LaunchableApp>,
+        wholeWords: Boolean = false,
+    ): LaunchableApp? {
         val wanted = simplify(query)
         if (wanted.isEmpty()) return null
         val scored =
-            apps.mapNotNull { app -> score(wanted, simplify(app.label))?.let { app to it } }
+            apps.mapNotNull { app ->
+                val label = simplify(app.label)
+                if (wholeWords && " $label ".indexOf(" $wanted ") < 0) null
+                else score(wanted, label)?.let { app to it }
+            }
         return scored
             .maxWithOrNull(
                 compareBy<Pair<LaunchableApp, Int>> { it.second }.thenBy { -it.first.label.length }

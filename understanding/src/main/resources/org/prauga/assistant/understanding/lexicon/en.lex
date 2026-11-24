@@ -252,3 +252,78 @@ messages | message | texts | text
 [intent context.vocabulary.messages]
 0.95 what did {subject} (?:say|send|text|write)(?: me)?
 0.95 (?:<vocabulary.filler> )*{flag=<flags>}
+
+# ---------------------------------------------------------------------------------------------
+# Commands handed to other apps. {subject} may end by naming the app: "… in Organic Maps".
+# ---------------------------------------------------------------------------------------------
+
+[words command.app.link]
+in | on | with | using | via | through
+
+[intent command.app]   # how a subject names an app; tried in this order
+1 {rest=.+} <command.app.link> (?:the )?{app=.+?}(?: app)?
+1 {rest=.+?} <command.app.link> (?:the )?{app=.+?}(?: app)?
+1 <command.app.link> (?:the )?{app=.+?}(?: app)?
+
+[intent command.timer]
+0.95 (set|start|create|make|put)( me)?( a| an)? timer   # first: equal confidence keeps the earlier phrase
+0.95 (set|start|create|make|put)( me)?( a| an)? timer( for)? {subject}
+0.95 (set|start|create|make|put)( me)?( a| an)? {subject} timer
+0.9 timer( for)? {subject}
+0.9 {subject} timer
+0.9 count ?down( from)? {subject}
+
+[intent command.alarm]
+0.95 (set|create|make|add|put)( me)?( an| a)? alarm
+0.95 (set|create|make|add|put)( me)?( an| a)? alarm( for| at)? {subject}
+0.95 wake me( up)?( at| by| for)? {subject}
+0.9 alarm( for| at)? {subject}
+
+[intent command.alarms]
+0.95 (show|open|list|see|check)( me)?( my| the| all( of)?( my)?)? alarms( {subject})?
+0.9 (what|which) alarms( do i have| are set| have i set)( {subject})?
+
+[intent command.map]
+0.9 (get |give me |show me |find )?(the )?directions (to|for) {subject}
+0.9 navigate( me)? to {subject}
+0.9 take me to {subject}
+0.9 how (do i|can i|to) get to {subject}
+0.9 (show|find|search for|look up)( me)? {subject} on (the |a )?map
+0.9 (show|find|search for)( me)? {subject} (near me|nearby)
+0.9 where is {subject} on the map
+
+[intent command.web]
+0.95 search (the )?(web|internet|online) for {subject}
+0.95 (search|look up|search for) {subject} (online|on the web|on the internet)
+0.95 web search( for)? {subject}
+0.9 google {subject}
+
+[intent command.play]
+0.84 play( me)? {subject}
+0.84 listen to {subject}
+
+[intent command.link]
+0.95 (open|go to|visit|browse to|load) {subject=(?:https?://)?(?:[\p{L}\p{N}-]+\.)+\p{L}{2,}(?::\d+)?(?:[/?#]\S*)?(?: .+)?}
+0.9 {subject=(?:https?://)?(?:[\p{L}\p{N}-]+\.)+\p{L}{2,}(?::\d+)?(?:[/?#]\S*)?}
+
+[intent command.photo]
+0.95 (take|snap|capture|shoot)( me)?( a| an| some)? (photo|photos|picture|pictures|pic|pics|selfie|snapshot)( {subject})?
+
+[intent command.video]
+0.95 (record|take|shoot|film|capture|make)( me)?( a| some)? (video|videos|clip)( {subject})?
+
+[intent command.audio]
+0.95 record( some| an| a| my)? (audio|sound|voice|voice note|voice memo|voice recording|memo)( {subject})?
+0.92 start( a| an)?( voice| audio| sound)? recording( {subject})?
+
+[intent command.event]
+0.95 (add|put|schedule|create|make)( an| a)?( event| meeting| appointment)?( called| named| for)? {subject} (to|in|on|into) (my |the )?calendar
+0.9 (add|schedule|create|make|plan|book)( an| a)? (event|meeting|appointment)( called| named| for)? {subject}
+0.85 (add|schedule|plan|book) {subject}
+
+[intent command.call]
+0.95 (call|dial|ring|phone) {subject=\+?[\d(][\d ()-]*\d(?: .+)?}
+
+[intent command.text]
+0.95 (text|message|sms)( to)? {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?
+0.95 send (a )?(text|message|sms) to {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?

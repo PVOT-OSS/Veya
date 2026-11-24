@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
+import org.prauga.assistant.capabilities.commands.AppRouter
 
 class CapabilityScanner(private val packages: PackageManager, private val ownPackage: String) {
     fun scan(): CapabilityMap {
@@ -62,7 +63,7 @@ class CapabilityScanner(private val packages: PackageManager, private val ownPac
                 packages.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
             }
         val packageName = resolved?.activityInfo?.packageName ?: return null
-        return packageName.takeUnless { it in CHOOSERS }
+        return packageName.takeUnless { it in AppRouter.CHOOSERS }
     }
 
     private fun kindOf(info: ApplicationInfo): AppKind =
@@ -78,9 +79,4 @@ class CapabilityScanner(private val packages: PackageManager, private val ownPac
             ApplicationInfo.CATEGORY_ACCESSIBILITY -> AppKind.ACCESSIBILITY
             else -> AppKind.UNDECLARED
         }
-
-    private companion object {
-        val CHOOSERS =
-            setOf("android", "com.android.intentresolver", "com.google.android.intentresolver")
-    }
 }
