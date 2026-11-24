@@ -12,4 +12,8 @@ interface IContextProvider {
     oneway void requestSync() = 1;
 
     ContextItemParcel[] query(in ContextQueryParcel query) = 2;
+
+    String[] types() = 3;
+
+    int maxSensitivity() = 4;
 }

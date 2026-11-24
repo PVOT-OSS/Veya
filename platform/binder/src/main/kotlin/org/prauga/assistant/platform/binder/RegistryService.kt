@@ -53,6 +53,10 @@ class RegistryService : Service() {
             override fun removeAll(packageName: String?, callback: IResultCallback?) {
                 gate.removeAll(Binder.getCallingUid(), packageName.orEmpty(), callback.asReply())
             }
+
+            override fun notifyChanged(packageName: String?) {
+                gate.notifyChanged(Binder.getCallingUid(), packageName.orEmpty())
+            }
         }
 
     override fun onBind(intent: Intent?): IBinder = binder

@@ -20,6 +20,7 @@ import org.prauga.assistant.sdk.protocol.Protocol
 class DonationGateTest {
     private val enabled = mutableSetOf("com.example.notes")
     private val sink = RecordingSink()
+    private val invalidated = mutableListOf<String>()
     private val gate =
         DonationGate(
             packagesForUid = { uid ->
@@ -32,6 +33,7 @@ class DonationGateTest {
                 },
             limiter = RateLimiter(capacity = 2, refillPerSecond = 0, nanoTime = { 0L }),
             sink = sink,
+            invalidate = { invalidated += it },
             scope = TestScope(UnconfinedTestDispatcher()),
         )
 
@@ -135,6 +137,13 @@ class DonationGateTest {
         val donation = sink.donations.single().third.single()
         assertEquals(Sensitivity.SENSITIVE, donation.sensitivity)
         assertEquals(99L, donation.expiresAt)
+    }
+
+    @Test
+    fun onlyTheVerifiedCallerCanInvalidateItsOwnCache() {
+        gate.notifyChanged(OTHER_UID, "com.example.notes")
+        gate.notifyChanged(NOTES_UID, "com.example.notes")
+        assertEquals(listOf("com.example.notes"), invalidated)
     }
 
     private class RecordingSink : DonationSink {

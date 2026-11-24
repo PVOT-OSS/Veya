@@ -37,6 +37,7 @@ object BinderModule {
             access = grants,
             limiter = RateLimiter(),
             sink = StoreDonationSink(store),
+            invalidate = store::invalidate,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )
     }

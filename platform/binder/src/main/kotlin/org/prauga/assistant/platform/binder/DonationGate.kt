@@ -16,6 +16,7 @@ class DonationGate(
     private val access: IntegrationAccess,
     private val limiter: RateLimiter,
     private val sink: DonationSink,
+    private val invalidate: (String) -> Unit,
     private val scope: CoroutineScope,
 ) {
     fun donate(
@@ -54,6 +55,10 @@ class DonationGate(
             sink.removeAll(packageName)
             reply(0)
         }
+    }
+
+    fun notifyChanged(uid: Int, packageName: String) {
+        if (callerProblem(uid, packageName) == null) invalidate(packageName)
     }
 
     private fun callerProblem(uid: Int, packageName: String): Int? =

@@ -14,4 +14,6 @@ interface IAssistantRegistry {
     oneway void remove(String packageName, in String[] itemIds, IResultCallback callback) = 2;
 
     oneway void removeAll(String packageName, IResultCallback callback) = 3;
+
+    oneway void notifyChanged(String packageName) = 4;
 }

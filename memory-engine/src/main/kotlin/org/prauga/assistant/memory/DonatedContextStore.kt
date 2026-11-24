@@ -52,6 +52,10 @@ internal constructor(
         changed(packageName)
     }
 
+    fun invalidate(packageName: String) {
+        engine.invalidate(DonatedContextProvider.idFor(packageName))
+    }
+
     suspend fun purgeExpired(): Int {
         val removed = dao.deleteExpired(clock())
         if (removed > 0) refreshProviders()

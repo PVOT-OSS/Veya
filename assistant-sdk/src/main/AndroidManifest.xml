@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <queries>
+        <package android:name="org.prauga.assistant" />
+        <package android:name="org.prauga.assistant.dev" />
+    </queries>
+
+    <application>
+        <service
+            android:name="org.prauga.assistant.sdk.ContextProviderService"
+            android:exported="true"
+            android:permission="org.prauga.assistant.permission.BIND_CONTEXT_PROVIDER">
+            <intent-filter>
+                <action android:name="org.prauga.assistant.sdk.action.PROVIDER" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>
