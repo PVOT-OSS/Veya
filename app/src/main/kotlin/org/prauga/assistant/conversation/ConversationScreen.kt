@@ -60,9 +60,13 @@ import org.prauga.assistant.R
 import org.prauga.assistant.core.IntentChoice
 
 @Composable
-fun ConversationScreen(viewModel: ConversationViewModel, onShowHistory: () -> Unit) {
+fun ConversationScreen(
+    viewModel: ConversationViewModel,
+    onShowHistory: () -> Unit,
+    onShowIntegrations: () -> Unit,
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ConversationContent(state, viewModel::onEvent, onShowHistory)
+    ConversationContent(state, viewModel::onEvent, onShowHistory, onShowIntegrations)
 }
 
 @Composable
@@ -70,6 +74,7 @@ private fun ConversationContent(
     state: ConversationUiState,
     onEvent: (ConversationEvent) -> Unit,
     onShowHistory: () -> Unit,
+    onShowIntegrations: () -> Unit,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
     val send = {
@@ -83,6 +88,11 @@ private fun ConversationContent(
             title = stringResource(R.string.app_name),
             backdrop = null,
             actions = {
+                PvotTopBarAction(
+                    painterResource(R.drawable.ic_apps),
+                    stringResource(R.string.action_integrations),
+                    onShowIntegrations,
+                )
                 PvotTopBarAction(
                     painterResource(R.drawable.ic_history),
                     stringResource(R.string.action_history),

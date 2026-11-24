@@ -18,27 +18,40 @@ import org.prauga.assistant.conversation.ConversationEvent
 import org.prauga.assistant.conversation.ConversationScreen
 import org.prauga.assistant.conversation.ConversationViewModel
 import org.prauga.assistant.history.HistoryScreen
+import org.prauga.assistant.integrations.IntegrationsScreen
 
 @Composable
 fun AppScaffold() {
     val conversation: ConversationViewModel = hiltViewModel()
-    var showHistory by rememberSaveable { mutableStateOf(false) }
-    BackHandler(enabled = showHistory) { showHistory = false }
+    var screen by rememberSaveable { mutableStateOf(Screen.CONVERSATION) }
+    BackHandler(enabled = screen != Screen.CONVERSATION) { screen = Screen.CONVERSATION }
     Surface(
         Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        if (showHistory) {
-            HistoryScreen(
-                onBack = { showHistory = false },
-                onOpen = { id ->
-                    conversation.onEvent(ConversationEvent.Open(id))
-                    showHistory = false
-                },
-            )
-        } else {
-            ConversationScreen(conversation, onShowHistory = { showHistory = true })
+        when (screen) {
+            Screen.CONVERSATION ->
+                ConversationScreen(
+                    conversation,
+                    onShowHistory = { screen = Screen.HISTORY },
+                    onShowIntegrations = { screen = Screen.INTEGRATIONS },
+                )
+            Screen.HISTORY ->
+                HistoryScreen(
+                    onBack = { screen = Screen.CONVERSATION },
+                    onOpen = { id ->
+                        conversation.onEvent(ConversationEvent.Open(id))
+                        screen = Screen.CONVERSATION
+                    },
+                )
+            Screen.INTEGRATIONS -> IntegrationsScreen(onBack = { screen = Screen.CONVERSATION })
         }
     }
+}
+
+private enum class Screen {
+    CONVERSATION,
+    HISTORY,
+    INTEGRATIONS,
 }
