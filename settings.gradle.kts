@@ -43,4 +43,6 @@ include(":platform:android")
 
 include(":inference:api")
 
+include(":inference:litert")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }
