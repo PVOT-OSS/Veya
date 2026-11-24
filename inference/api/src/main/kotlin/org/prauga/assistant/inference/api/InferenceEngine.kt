@@ -14,6 +14,8 @@ interface InferenceEngine {
 
     suspend fun unload()
 
+    suspend fun prepare(systemInstruction: String?, history: List<PromptTurn>)
+
     fun generate(prompt: InferencePrompt): Flow<InferenceEvent>
 
     suspend fun cancel()
@@ -32,6 +34,7 @@ data class InferenceConfig(
     val maxOutputTokens: Int? = null,
     val speculativeDecoding: Boolean = false,
     val thinking: Boolean = false,
+    val cpuThreads: Int? = null,
     val sampling: Sampling? = null,
 )
 

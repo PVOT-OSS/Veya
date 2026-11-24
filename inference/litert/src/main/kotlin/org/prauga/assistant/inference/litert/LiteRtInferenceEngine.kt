@@ -96,7 +96,9 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
     override fun generate(prompt: InferencePrompt): Flow<InferenceEvent> =
         flow<InferenceEvent> {
                 mutex.withLock {
+                    val setup = InferenceTimer()
                     val active = conversationFor(prompt)
+                    val setupMillis = setup.finish(null).totalMillis
                     val timer = InferenceTimer()
                     val reply = StringBuilder()
                     try {
@@ -123,11 +125,26 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
                                 PromptTurn(true, prompt.userText) +
                                 PromptTurn(false, reply.toString()),
                         )
-                    val decoded = active.getBenchmarkInfo().lastDecodeTokenCount.takeIf { it > 0 }
-                    emit(InferenceEvent.Done(timer.finish(decoded)))
+                    val info = active.getBenchmarkInfo()
+                    val stats =
+                        timer
+                            .finish(info.lastDecodeTokenCount.takeIf { it > 0 })
+                            .copy(
+                                setupMillis = setupMillis,
+                                promptTokens = info.lastPrefillTokenCount.takeIf { it > 0 },
+                                prefillTokensPerSecond =
+                                    info.lastPrefillTokensPerSecond.takeIf { it > 0 },
+                            )
+                    emit(InferenceEvent.Done(stats))
                 }
             }
             .flowOn(dispatcher)
+
+    override suspend fun prepare(systemInstruction: String?, history: List<PromptTurn>) {
+        withContext(dispatcher) {
+            mutex.withLock { conversationFor(InferencePrompt(systemInstruction, history, "")) }
+        }
+    }
 
     override suspend fun cancel() {
         withContext(dispatcher) { conversation?.cancelProcess() }
@@ -162,13 +179,14 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
             samplerConfig = samplerConfig,
             maxOutputToken = sampling?.maxOutputTokens,
             thinkingConfig = ThinkingConfig(enableThinking = sampling?.thinking == true),
+            prefillPrefaceOnInit = true,
         )
     }
 
     private fun engineConfig(model: LocalModel, config: InferenceConfig): EngineConfig =
         EngineConfig(
             modelPath = model.path,
-            backend = backend(config.backend),
+            backend = backend(config),
             maxNumTokens = config.maxContextTokens,
             cacheDir = cacheDir,
             speculativeDecodingConfig =
@@ -177,9 +195,9 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
                 else null,
         )
 
-    private fun backend(backend: ComputeBackend): Backend =
-        when (backend) {
-            ComputeBackend.CPU -> Backend.CPU()
+    private fun backend(config: InferenceConfig): Backend =
+        when (config.backend) {
+            ComputeBackend.CPU -> Backend.CPU(threadCount = config.cpuThreads)
             ComputeBackend.GPU -> Backend.GPU()
             ComputeBackend.NPU -> Backend.NPU(nativeLibraryDir)
         }

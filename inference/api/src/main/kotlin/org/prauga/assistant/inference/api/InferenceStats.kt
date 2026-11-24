@@ -8,6 +8,9 @@ data class InferenceStats(
     val totalMillis: Long,
     val chunks: Int,
     val outputTokens: Int?,
+    val setupMillis: Long? = null,
+    val promptTokens: Int? = null,
+    val prefillTokensPerSecond: Double? = null,
 ) {
     val decodeTokensPerSecond: Double?
         get() {

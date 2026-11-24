@@ -22,6 +22,7 @@ import org.prauga.assistant.inference.api.InferenceConfig
 import org.prauga.assistant.inference.api.InferenceEvent
 import org.prauga.assistant.inference.api.InferenceException
 import org.prauga.assistant.inference.api.InferencePrompt
+import org.prauga.assistant.inference.api.InferenceStats
 import org.prauga.assistant.inference.api.LocalModel
 import org.prauga.assistant.inference.api.ModelFormat
 
@@ -47,6 +48,9 @@ class ModelSpeedTest {
             }
         val runs = arguments.getString(ARG_RUNS)?.toInt() ?: DEFAULT_RUNS
         val speculative = arguments.getString(ARG_MTP).toBoolean()
+        val threads =
+            arguments.getString(ARG_THREADS)?.split(',')?.map { it.trim().toIntOrNull() }
+                ?: listOf(null)
         report("device", deviceLine())
         for (file in models) {
             val model =
@@ -58,18 +62,17 @@ class ModelSpeedTest {
                     ModelFormat.LITERT_LM,
                 )
             for (backend in backends) {
-                report(
-                    "result",
-                    measure(
-                        model,
+                val threadOptions = if (backend == ComputeBackend.CPU) threads else listOf(null)
+                for (count in threadOptions) {
+                    val config =
                         InferenceConfig(
                             backend,
                             maxOutputTokens = MAX_OUTPUT,
                             speculativeDecoding = speculative,
-                        ),
-                        runs,
-                    ),
-                )
+                            cpuThreads = count,
+                        )
+                    report("result", measure(model, config, runs))
+                }
             }
         }
     }
@@ -78,7 +81,8 @@ class ModelSpeedTest {
         val engine =
             LiteRtInferenceEngine(context.cacheDir.path, context.applicationInfo.nativeLibraryDir)
         val label =
-            "model=${model.id} sizeMb=${model.sizeBytes / BYTES_PER_MB} backend=${config.backend} mtp=${config.speculativeDecoding}"
+            "model=${model.id} sizeMb=${model.sizeBytes / BYTES_PER_MB} backend=${config.backend} " +
+                "threads=${config.cpuThreads ?: "default"} mtp=${config.speculativeDecoding}"
         val pssBefore = pssMb()
         return try {
             val loadStart = System.nanoTime()
@@ -86,21 +90,10 @@ class ModelSpeedTest {
             val loadMillis = (System.nanoTime() - loadStart) / NANOS_PER_MILLI
             val pssLoaded = pssMb()
             engine.generate(InferencePrompt(null, emptyList(), WARM_UP)).toList()
-            val samples =
-                (1..runs).flatMap {
-                    PROMPTS.map { text ->
-                        engine
-                            .generate(InferencePrompt(null, emptyList(), text))
-                            .toList()
-                            .filterIsInstance<InferenceEvent.Done>()
-                            .single()
-                            .stats
-                    }
-                }
-            val ttft = samples.mapNotNull { it.timeToFirstChunkMillis }.sorted()
-            val decode = samples.mapNotNull { it.decodeTokensPerSecond }.sorted()
-            "$label loadMs=$loadMillis firstLoad=${model.id !in warmed} ttftMedianMs=${ttft.median()} ttftMaxMs=${ttft.lastOrNull()} " +
-                "decodeTokPerSecMedian=${"%.1f".format(decode.medianDouble())} samples=${samples.size} " +
+            val fresh = sample(engine, runs, prepared = false)
+            val prepared = sample(engine, runs, prepared = true)
+            "$label loadMs=$loadMillis firstLoad=${model.id !in warmed} " +
+                "fresh[${fresh.summary()}] prepared[${prepared.summary()}] " +
                 "pssBeforeMb=$pssBefore pssLoadedMb=$pssLoaded pssAfterMb=${pssMb()} thermal=${thermal()}"
         } catch (e: InferenceException) {
             "$label failed=${e.message}"
@@ -108,6 +101,36 @@ class ModelSpeedTest {
             warmed += model.id
             engine.unload()
         }
+    }
+
+    private suspend fun sample(
+        engine: LiteRtInferenceEngine,
+        runs: Int,
+        prepared: Boolean,
+    ): List<InferenceStats> =
+        (1..runs).flatMap {
+            PROMPTS.map { text ->
+                if (prepared) engine.prepare(null, emptyList())
+                engine
+                    .generate(InferencePrompt(null, emptyList(), text))
+                    .toList()
+                    .filterIsInstance<InferenceEvent.Done>()
+                    .single()
+                    .stats
+            }
+        }
+
+    private fun List<InferenceStats>.summary(): String {
+        val setup = mapNotNull { it.setupMillis }.sorted()
+        val ttft = mapNotNull { it.timeToFirstChunkMillis }.sorted()
+        val total =
+            mapNotNull { s -> s.timeToFirstChunkMillis?.let { it + (s.setupMillis ?: 0) } }.sorted()
+        val prefill = mapNotNull { it.prefillTokensPerSecond }.sorted()
+        val decode = mapNotNull { it.decodeTokensPerSecond }.sorted()
+        return "setupMs=${setup.median()} firstWordAfterSetupMs=${ttft.median()} firstWordTotalMs=${total.median()} " +
+            "promptTokens=${mapNotNull { it.promptTokens }.sorted().median()} " +
+            "prefillTokPerSec=${"%.0f".format(prefill.medianDouble())} decodeTokPerSec=${"%.1f".format(decode.medianDouble())} " +
+            "n=$size"
     }
 
     private fun report(key: String, line: String) {
@@ -131,9 +154,9 @@ class ModelSpeedTest {
     private fun thermal(): Int =
         context.getSystemService(PowerManager::class.java).currentThermalStatus
 
-    private fun List<Long>.median(): Long? = if (isEmpty()) null else this[size / 2]
+    private fun <T> List<T>.median(): T? = if (isEmpty()) null else this[size / 2]
 
-    private fun List<Double>.medianDouble(): Double = if (isEmpty()) Double.NaN else this[size / 2]
+    private fun List<Double>.medianDouble(): Double = median() ?: Double.NaN
 
     private companion object {
         val warmed = mutableSetOf<String>()
@@ -141,6 +164,7 @@ class ModelSpeedTest {
         const val ARG_BACKENDS = "backends"
         const val ARG_RUNS = "runs"
         const val ARG_MTP = "mtp"
+        const val ARG_THREADS = "threads"
         const val DEFAULT_DIR = "/data/local/tmp/veya-models"
         const val DEFAULT_RUNS = 3
         const val MAX_OUTPUT = 128
