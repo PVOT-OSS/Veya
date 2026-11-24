@@ -18,40 +18,54 @@ import org.prauga.assistant.conversation.ConversationEvent
 import org.prauga.assistant.conversation.ConversationScreen
 import org.prauga.assistant.conversation.ConversationViewModel
 import org.prauga.assistant.history.HistoryScreen
+import org.prauga.assistant.home.HomeScreen
 import org.prauga.assistant.integrations.IntegrationsScreen
 
 @Composable
 fun AppScaffold() {
     val conversation: ConversationViewModel = hiltViewModel()
-    var screen by rememberSaveable { mutableStateOf(Screen.CONVERSATION) }
-    BackHandler(enabled = screen != Screen.CONVERSATION) { screen = Screen.CONVERSATION }
+    var stack by rememberSaveable { mutableStateOf(listOf(Screen.HOME)) }
+    val open: (Screen) -> Unit = { stack = stack + it }
+    val back: () -> Unit = { if (stack.size > 1) stack = stack.dropLast(1) }
+    BackHandler(enabled = stack.size > 1, onBack = back)
     Surface(
         Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        when (screen) {
-            Screen.CONVERSATION ->
+        when (stack.last()) {
+            Screen.HOME ->
+                HomeScreen(
+                    onAsk = { open(Screen.ASK) },
+                    onOpenConversation = { id ->
+                        conversation.onEvent(ConversationEvent.Open(id))
+                        open(Screen.ASK)
+                    },
+                    onShowIntegrations = { open(Screen.INTEGRATIONS) },
+                    onShowHistory = { open(Screen.HISTORY) },
+                )
+            Screen.ASK ->
                 ConversationScreen(
                     conversation,
-                    onShowHistory = { screen = Screen.HISTORY },
-                    onShowIntegrations = { screen = Screen.INTEGRATIONS },
+                    onBack = back,
+                    onShowHistory = { open(Screen.HISTORY) },
                 )
             Screen.HISTORY ->
                 HistoryScreen(
-                    onBack = { screen = Screen.CONVERSATION },
+                    onBack = back,
                     onOpen = { id ->
                         conversation.onEvent(ConversationEvent.Open(id))
-                        screen = Screen.CONVERSATION
+                        stack = stack.dropLast(1).filter { it != Screen.ASK } + Screen.ASK
                     },
                 )
-            Screen.INTEGRATIONS -> IntegrationsScreen(onBack = { screen = Screen.CONVERSATION })
+            Screen.INTEGRATIONS -> IntegrationsScreen(onBack = back)
         }
     }
 }
 
 private enum class Screen {
-    CONVERSATION,
+    HOME,
+    ASK,
     HISTORY,
     INTEGRATIONS,
 }

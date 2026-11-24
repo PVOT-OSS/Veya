@@ -35,6 +35,25 @@
     <string name="dismiss">Dismiss</string>
 
     <string name="action_integrations">Integrations</string>
+    <string name="ask_title">Ask Veya</string>
+    <string name="ask_pill">Ask Veya about your apps</string>
+    <string name="home_capabilities_title">What Veya can do with your apps</string>
+    <string name="home_capabilities_scanning">Looking at the apps on this phone…</string>
+    <string name="home_capabilities_none">No installed app offers anything Veya can use yet.</string>
+    <string name="home_capability_default">Default: %1$s</string>
+    <string name="home_capability_choose">You choose each time</string>
+    <plurals name="home_capability_apps">
+        <item quantity="one">%d app</item>
+        <item quantity="other">%d apps</item>
+    </plurals>
+    <string name="home_capability_sheet_default">Default</string>
+    <string name="home_connected_title">Apps sharing with Veya</string>
+    <plurals name="home_connected_summary">
+        <item quantity="one">%1$d of %2$d supported app turned on</item>
+        <item quantity="other">%1$d of %2$d supported apps turned on</item>
+    </plurals>
+    <string name="home_connected_none">Apps that support Veya will appear here.</string>
+    <string name="home_recent_title">Recent questions</string>
     <string name="integrations_title">Integrations</string>
     <string name="integrations_body">Apps that support Veya can answer your questions from their own data. Nothing is copied or sent anywhere. Each app stays off until you turn it on.</string>
     <string name="integrations_empty">No installed apps support Veya yet.</string>

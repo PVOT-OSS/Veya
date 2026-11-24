@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":memory-engine"))
     implementation(project(":platform:android"))
     implementation(project(":platform:binder"))
+    implementation(project(":capabilities"))
     implementation(libs.timber)
     implementation(libs.pvot.design.system)
     implementation(libs.pvot.core.ui)

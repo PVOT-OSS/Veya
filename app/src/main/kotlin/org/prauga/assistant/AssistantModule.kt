@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.prauga.assistant.capabilities.CapabilityRepository
+import org.prauga.assistant.capabilities.CapabilityScanner
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.core.Assistant
 import org.prauga.assistant.core.ConversationStore
@@ -71,6 +73,17 @@ object AssistantModule {
     @ApplicationScope
     fun applicationScope(@IoDispatcher io: CoroutineDispatcher): CoroutineScope =
         CoroutineScope(SupervisorJob() + io)
+
+    @Provides
+    @Singleton
+    fun capabilityRepository(
+        @ApplicationContext context: Context,
+        @ApplicationScope scope: CoroutineScope,
+        @IoDispatcher io: CoroutineDispatcher,
+    ): CapabilityRepository {
+        val scanner = CapabilityScanner(context.packageManager, context.packageName)
+        return CapabilityRepository(scanner::scan, scope, io)
+    }
 
     @Provides
     @Singleton

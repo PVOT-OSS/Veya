@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -62,19 +61,19 @@ import org.prauga.assistant.core.IntentChoice
 @Composable
 fun ConversationScreen(
     viewModel: ConversationViewModel,
+    onBack: () -> Unit,
     onShowHistory: () -> Unit,
-    onShowIntegrations: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ConversationContent(state, viewModel::onEvent, onShowHistory, onShowIntegrations)
+    ConversationContent(state, viewModel::onEvent, onBack, onShowHistory)
 }
 
 @Composable
 private fun ConversationContent(
     state: ConversationUiState,
     onEvent: (ConversationEvent) -> Unit,
+    onBack: () -> Unit,
     onShowHistory: () -> Unit,
-    onShowIntegrations: () -> Unit,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
     val send = {
@@ -85,14 +84,10 @@ private fun ConversationContent(
     }
     Column(Modifier.fillMaxSize().imePadding()) {
         PvotTopBar(
-            title = stringResource(R.string.app_name),
+            title = stringResource(R.string.ask_title),
+            onBack = onBack,
             backdrop = null,
             actions = {
-                PvotTopBarAction(
-                    painterResource(R.drawable.ic_apps),
-                    stringResource(R.string.action_integrations),
-                    onShowIntegrations,
-                )
                 PvotTopBarAction(
                     painterResource(R.drawable.ic_history),
                     stringResource(R.string.action_history),
@@ -106,7 +101,6 @@ private fun ConversationContent(
                 )
             },
         )
-        OnDeviceBadge(Modifier.padding(horizontal = PvotSpacing.L))
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (state.entries.isEmpty() && state.prompt == null) {
                 Welcome(onSuggestion = { onEvent(ConversationEvent.Submit(it)) })
@@ -115,32 +109,6 @@ private fun ConversationContent(
             }
         }
         InputBar(input, { input = it }, send, canSend = input.isNotBlank() && !state.busy)
-    }
-}
-
-@Composable
-private fun OnDeviceBadge(modifier: Modifier = Modifier) {
-    Row(
-        modifier.padding(vertical = PvotSpacing.S),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(8.dp),
-        ) {}
-        Spacer(Modifier.size(PvotSpacing.S))
-        Text(
-            stringResource(R.string.on_device_badge),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.size(PvotSpacing.S))
-        Text(
-            stringResource(R.string.on_device_detail),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

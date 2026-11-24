@@ -8,6 +8,7 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.prauga.assistant.capabilities.CapabilityRepository
 import org.prauga.assistant.memory.DonatedContextStore
 import org.prauga.assistant.platform.binder.LiveProviders
 import org.prauga.assistant.platform.binder.PackageChanges
@@ -23,11 +24,15 @@ class VeyaApplication : Application() {
 
     @Inject lateinit var packageChanges: PackageChanges
 
+    @Inject lateinit var capabilities: CapabilityRepository
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         scope.launch { donatedContext.start() }
         liveProviders.start()
         packageChanges.watch(liveProviders::refreshDirectory)
+        capabilities.refresh()
+        packageChanges.watch(capabilities::refresh)
     }
 }
