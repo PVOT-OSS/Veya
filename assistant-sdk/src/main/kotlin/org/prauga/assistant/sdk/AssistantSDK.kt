@@ -14,26 +14,9 @@ import org.prauga.assistant.sdk.protocol.IAssistantRegistry
 import org.prauga.assistant.sdk.protocol.Protocol
 
 object AssistantSDK {
-    private class State(
-        val context: Context,
-        val config: AssistantConfig,
-        val verifier: CallerVerifier,
-    )
-
-    private val state = AtomicReference<State?>(null)
+    private val config = AtomicReference(AssistantConfig())
     private val provider = AtomicReference<ContextProvider?>(null)
-
-    fun initialize(context: Context, config: AssistantConfig) {
-        val app = context.applicationContext
-        val signers = PackageSigners(app.packageManager)
-        state.set(
-            State(
-                app,
-                config,
-                CallerVerifier(app.packageManager::getPackagesForUid, signers::of, config),
-            )
-        )
-    }
+    private val verifier = AtomicReference<CallerVerifier?>(null)
 
     fun registerContextProvider(contextProvider: ContextProvider) {
         provider.set(contextProvider)
@@ -43,33 +26,51 @@ object AssistantSDK {
         provider.set(null)
     }
 
-    fun notifyChanged() {
-        val current = state.get() ?: return
-        val intent = Intent(Protocol.ACTION_REGISTRY)
-        current.config.assistantPackages.forEach { assistant ->
-            val target = Intent(intent).setPackage(assistant)
+    fun configure(assistantConfig: AssistantConfig) {
+        config.set(assistantConfig)
+        verifier.set(null)
+    }
+
+    fun notifyChanged(context: Context) {
+        val app = context.applicationContext
+        config.get().assistantPackages.forEach { assistant ->
+            val target = Intent(Protocol.ACTION_REGISTRY).setPackage(assistant)
             val connection =
                 object : ServiceConnection {
                     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                         try {
                             IAssistantRegistry.Stub.asInterface(service)
-                                .notifyChanged(current.context.packageName)
+                                .notifyChanged(app.packageName)
                         } catch (e: RemoteException) {
-                            current.context.unbindService(this)
+                            app.unbindService(this)
                             return
                         }
-                        current.context.unbindService(this)
+                        app.unbindService(this)
                     }
 
                     override fun onServiceDisconnected(name: ComponentName?) = Unit
                 }
-            if (!current.context.bindService(target, connection, Context.BIND_AUTO_CREATE)) {
-                current.context.unbindService(connection)
-            }
+            if (!app.bindService(target, connection, Context.BIND_AUTO_CREATE))
+                app.unbindService(connection)
         }
     }
 
-    internal fun verifier(): CallerVerifier? = state.get()?.verifier
+    internal fun verifier(context: Context): CallerVerifier {
+        verifier.get()?.let {
+            return it
+        }
+        val packages = context.applicationContext.packageManager
+        val current = config.get()
+        val created =
+            CallerVerifier(
+                packagesForUid = packages::getPackagesForUid,
+                signers = PackageSigners(packages)::of,
+                trustedSha256 = OfficialSigners.SHA256 + current.additionalTrustedSigners,
+                assistantPackages = current.assistantPackages,
+            )
+        verifier.compareAndSet(null, created)
+        return verifier.get() ?: created
+    }
 
     internal fun provider(): ContextProvider? = provider.get()
 }

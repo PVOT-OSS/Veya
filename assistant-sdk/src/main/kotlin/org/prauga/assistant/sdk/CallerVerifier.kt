@@ -6,15 +6,15 @@ package org.prauga.assistant.sdk
 internal class CallerVerifier(
     private val packagesForUid: (Int) -> Array<String>?,
     private val signers: (String) -> SignerSet?,
-    config: AssistantConfig,
+    trustedSha256: Set<String>,
+    private val assistantPackages: Set<String>,
 ) {
-    private val allowedPackages = config.assistantPackages
-    private val trusted: List<ByteArray> = config.trustedSignerSha256.map(::parseHex)
+    private val trusted: List<ByteArray> = trustedSha256.map(::parseHex)
 
     fun isTrusted(uid: Int): Boolean {
         if (trusted.isEmpty()) return false
         val names = packagesForUid(uid) ?: return false
-        return names.any { it in allowedPackages && signedByTrustedKey(it) }
+        return names.any { it in assistantPackages && signedByTrustedKey(it) }
     }
 
     private fun signedByTrustedKey(packageName: String): Boolean {

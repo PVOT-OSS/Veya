@@ -45,7 +45,7 @@ class ContextProviderService : Service() {
     override fun onBind(intent: Intent?): IBinder = binder
 
     private fun verifiedProvider(): ContextProvider? {
-        val verifier = AssistantSDK.verifier() ?: return null
+        val verifier = AssistantSDK.verifier(applicationContext)
         if (!verifier.isTrusted(Binder.getCallingUid())) return null
         return AssistantSDK.provider()
     }

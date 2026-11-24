@@ -25,7 +25,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "org.prauga.assistant"
             artifactId = "assistant-sdk"
-            version = "0.1.0"
+            version = "0.2.0"
             afterEvaluate { from(components["release"]) }
         }
     }

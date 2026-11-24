@@ -4,7 +4,7 @@
 package org.prauga.assistant.sdk
 
 data class AssistantConfig(
-    val trustedSignerSha256: Set<String>,
+    val additionalTrustedSigners: Set<String> = emptySet(),
     val assistantPackages: Set<String> = DEFAULT_PACKAGES,
 ) {
     companion object {

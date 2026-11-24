@@ -30,7 +30,8 @@ class CallerVerifierTest {
         return CallerVerifier(
             { uids[it] },
             { byPackage[it] },
-            AssistantConfig(trustedSignerSha256 = pins),
+            pins,
+            AssistantConfig.DEFAULT_PACKAGES,
         )
     }
 
