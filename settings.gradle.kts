@@ -41,4 +41,6 @@ include(":intent-engine")
 
 include(":assistant-core")
 
+include(":memory-engine")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }

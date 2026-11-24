@@ -14,6 +14,9 @@ composeBom = "2026.02.01"
 coroutines = "1.11.0"
 pvot = "1.0.0"
 junit = "4.13.2"
+room = "2.8.5"
+robolectric = "4.17"
+androidxTestCore = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +37,10 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 pvot-core-ui = { group = "com.prauga.pvot", name = "core-ui", version.ref = "pvot" }
 pvot-design-system = { group = "com.prauga.pvot", name = "design-system", version.ref = "pvot" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 compose-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -45,6 +52,7 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }
 pvot-android-application = { id = "pvot.android.application" }
 pvot-android-library = { id = "pvot.android.library" }
 pvot-android-compose = { id = "pvot.android.compose" }
