@@ -3,6 +3,7 @@
 
 package org.prauga.assistant.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -32,6 +34,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -111,6 +115,16 @@ fun HomeScreen(
                 }
             }
         }
+        Box(
+            Modifier.align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(PILL_CLEARANCE)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, MaterialTheme.colorScheme.background)
+                    )
+                )
+        )
         AskPill(onAsk, Modifier.align(Alignment.BottomCenter))
     }
     val sheetTile = state.capabilities.firstOrNull { it.capability == opened }
@@ -216,7 +230,7 @@ private fun CapabilityCard(tile: CapabilityTile, onClick: () -> Unit) {
                     ?: stringResource(R.string.home_capability_choose),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -228,7 +242,13 @@ private fun ConnectedCard(connected: Int, supported: Int, onClick: () -> Unit) {
     PvotCard(Modifier.fillMaxWidth(), onClick = onClick) {
         Text(
             if (supported == 0) stringResource(R.string.home_connected_none)
-            else pluralStringResource(R.plurals.home_connected_summary, supported, connected, supported),
+            else
+                pluralStringResource(
+                    R.plurals.home_connected_summary,
+                    supported,
+                    connected,
+                    supported,
+                ),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(PvotSpacing.L),
         )
