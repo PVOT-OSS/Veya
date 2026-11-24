@@ -8,7 +8,34 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 /** A phrase that means an intent: a compiled pattern, how sure it is, and the slots it fills. */
-class Phrase(val pattern: Regex, val confidence: Float, val slots: List<String>)
+class Phrase(
+    val pattern: Regex,
+    val confidence: Float,
+    val slots: List<String>,
+    /** Text that must contain one of each group's words for [pattern] to match; checked first. */
+    val required: List<List<String>> = emptyList(),
+) {
+    /** False when [text] can't match, without running the regex. */
+    fun mayMatch(text: String): Boolean = satisfied(required, text)
+
+    companion object {
+        /** True when [text] holds one word of every group in [required]; allocates nothing. */
+        fun satisfied(required: List<List<String>>, text: String): Boolean {
+            for (group in required.indices) {
+                val words = required[group]
+                var found = false
+                for (word in words.indices) {
+                    if (text.contains(words[word])) {
+                        found = true
+                        break
+                    }
+                }
+                if (!found) return false
+            }
+            return true
+        }
+    }
+}
 
 /**
  * Everything Veya knows about the words of the languages it reads. Code only names meanings
@@ -54,7 +81,12 @@ private constructor(
         intents[intentId].orEmpty().map { template ->
             val slots = ArrayList<String>(2)
             val regex = expand(template.pattern, lists, slots)
-            Phrase(Regex(regex), template.confidence, slots)
+            Phrase(
+                Regex(regex),
+                template.confidence,
+                slots,
+                Requirements.of(template.pattern) { name -> lists[name] ?: words(name) },
+            )
         }
 
     private fun expand(
@@ -197,13 +229,13 @@ private constructor(
             }
         }
 
-        private fun listEnd(pattern: String, start: Int): Int {
+        internal fun listEnd(pattern: String, start: Int): Int {
             val end = pattern.indexOf('>', start)
             if (end < 0) return -1
             return end.takeIf { NAME.matches(pattern.substring(start + 1, end)) } ?: -1
         }
 
-        private fun slotEnd(pattern: String, start: Int): Int {
+        internal fun slotEnd(pattern: String, start: Int): Int {
             var depth = 0
             for (index in start until pattern.length) {
                 when (pattern[index]) {

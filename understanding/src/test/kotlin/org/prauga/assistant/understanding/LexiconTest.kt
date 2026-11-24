@@ -97,4 +97,131 @@ class LexiconTest {
         assertEquals(listOf("en"), lexicon.languages)
         assertNotNull(lexicon.phrases("app.open").firstOrNull())
     }
+
+    @Test
+    fun readsWhatAPhraseCannotMatchWithout() {
+        val lexicon =
+            Lexicon.parse(
+                """
+                [words light]
+                torch | flashlight
+                [intent x]
+                0.9 (set|start)( me)?( a| an)? timer( for)? {subject}
+                0.9 <light> on
+                0.9 count ?down {subject}
+                0.9 (open|launch)( {app})?
+                0.9 a|b
+                0.9 .*\bbattery\b.*
+                0.9 call {number=\+?[\d(][\d ()-]*\d}
+                """
+                    .trimIndent()
+            )
+        assertEquals(
+            listOf(
+                listOf(listOf("set", "start"), listOf("timer")),
+                listOf(listOf("torch", "flashlight"), listOf("on")),
+                listOf(listOf("count"), listOf("down")),
+                listOf(listOf("open", "launch")),
+                emptyList(),
+                listOf(listOf("battery")),
+                listOf(listOf("call")),
+            ),
+            lexicon.phrases("x").map { it.required },
+        )
+    }
+
+    @Test
+    fun requiredWordsNeverRejectAMatch() {
+        val lexicon = Lexicon.english()
+        val lists = mapOf("types" to listOf("messages", "notes"), "flags" to listOf("unread"))
+        val sentences =
+            listOf(
+                "set a timer for 10 minutes",
+                "10 minute timer",
+                "countdown 5 minutes",
+                "count down from 30 seconds",
+                "wake me up at 7am",
+                "set an alarm",
+                "show my alarms",
+                "what alarms do i have",
+                "directions to the eiffel tower",
+                "navigate",
+                "find coffee near me",
+                "how do i get to the station",
+                "search the web for kotlin",
+                "google cats",
+                "play some jazz",
+                "listen to rain",
+                "open example.org",
+                "example.org/path",
+                "open a website",
+                "take a photo",
+                "record a video",
+                "record a voice note",
+                "start recording",
+                "add dinner tomorrow at 8pm",
+                "add an event",
+                "call 555 0100",
+                "call",
+                "text 555 0100 running late",
+                "send a text to 555 0100 hi",
+                "turn on the flashlight",
+                "torch off",
+                "what's my battery",
+                "battery",
+                "how much battery is left",
+                "open camera",
+                "open",
+                "open wifi settings",
+                "settings",
+                "what time is it",
+                "what's the date today",
+                "what day is it",
+                "which android version is this",
+                "search my notes for milk",
+                "search for milk",
+                "unread messages",
+                "messages from sam",
+                "what did sam say",
+                "unread",
+            )
+        val ids =
+            listOf(
+                "device.battery",
+                "device.torch.on",
+                "device.torch.off",
+                "device.info",
+                "time.now",
+                "date.today",
+                "app.open",
+                "context.search",
+                "context.vocabulary",
+                "context.vocabulary.messages",
+                "command.timer",
+                "command.alarm",
+                "command.alarms",
+                "command.map",
+                "command.web",
+                "command.play",
+                "command.link",
+                "command.photo",
+                "command.video",
+                "command.audio",
+                "command.event",
+                "command.call",
+                "command.text",
+            )
+        var matched = 0
+        ids.forEach { id ->
+            lexicon.phrases(id, lists).forEach { phrase ->
+                sentences.forEach { text ->
+                    if (phrase.pattern.matches(text)) {
+                        matched++
+                        assertTrue("$id ${phrase.pattern} rejected “$text”", phrase.mayMatch(text))
+                    }
+                }
+            }
+        }
+        assertTrue(matched > sentences.size)
+    }
 }

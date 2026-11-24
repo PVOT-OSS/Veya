@@ -39,6 +39,7 @@ internal class VocabularyHandler(
         val current = currentIndex() ?: return null
         val text = utterance.normalized
         for (phrase in current.phrases) {
+            if (!phrase.mayMatch(text)) continue
             val found = phrase.pattern.matchEntire(text) ?: continue
             val entities = HashMap<String, String>(4)
             phrase.slots.forEach { name ->

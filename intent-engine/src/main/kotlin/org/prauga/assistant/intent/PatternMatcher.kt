@@ -10,13 +10,17 @@ class PatternMatcher(private val intentId: String, private val rules: List<Rule>
         val pattern: Regex,
         val confidence: Float,
         val entities: List<String> = emptyList(),
-    )
+        val required: List<List<String>> = emptyList(),
+    ) {
+        fun mayMatch(text: String): Boolean = Phrase.satisfied(required, text)
+    }
 
     fun match(utterance: Utterance): IntentMatch? {
         var best: IntentMatch? = null
         for (rule in rules) {
-            val result = rule.pattern.matchEntire(utterance.normalized) ?: continue
             if (best != null && best.confidence >= rule.confidence) continue
+            if (!rule.mayMatch(utterance.normalized)) continue
+            val result = rule.pattern.matchEntire(utterance.normalized) ?: continue
             val entities =
                 rule.entities
                     .mapNotNull { name ->
@@ -34,7 +38,10 @@ class PatternMatcher(private val intentId: String, private val rules: List<Rule>
 
     companion object {
         fun from(intentId: String, phrases: List<Phrase>) =
-            PatternMatcher(intentId, phrases.map { Rule(it.pattern, it.confidence, it.slots) })
+            PatternMatcher(
+                intentId,
+                phrases.map { Rule(it.pattern, it.confidence, it.slots, it.required) },
+            )
 
         fun rule(pattern: String, confidence: Float, vararg entities: String) =
             Rule(Regex(pattern), confidence, entities.toList())
