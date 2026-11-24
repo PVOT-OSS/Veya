@@ -49,4 +49,6 @@ include(":context-engine")
 
 include(":benchmarks")
 
+include(":assistant-sdk")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }
