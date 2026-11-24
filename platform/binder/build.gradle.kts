@@ -14,6 +14,7 @@ android {
 dependencies {
     api(project(":memory-engine"))
     api(project(":context-engine"))
+    api(project(":intent-engine"))
     implementation(project(":assistant-sdk"))
     implementation(libs.timber)
     implementation(libs.androidx.core.ktx)

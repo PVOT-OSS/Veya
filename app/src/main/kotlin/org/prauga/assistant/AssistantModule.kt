@@ -23,6 +23,7 @@ import org.prauga.assistant.memory.DonatedContextStore
 import org.prauga.assistant.memory.MemoryEngine
 import org.prauga.assistant.platform.android.AndroidPlatformGate
 import org.prauga.assistant.platform.android.DeviceHandlers
+import org.prauga.assistant.platform.binder.ContextSearchHandler
 import org.prauga.assistant.platform.binder.IntegrationGrants
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class IoDispatcher
@@ -43,8 +44,14 @@ object AssistantModule {
 
     @Provides
     @Singleton
-    fun intentEngine(@ApplicationContext context: Context): IntentEngine =
-        IntentEngine(DeviceHandlers.create(context), AndroidPlatformGate(context))
+    fun intentEngine(
+        @ApplicationContext context: Context,
+        contextEngine: ContextEngine,
+    ): IntentEngine =
+        IntentEngine(
+            DeviceHandlers.create(context) + ContextSearchHandler.all(context, contextEngine),
+            AndroidPlatformGate(context),
+        )
 
     @Provides
     @Singleton
