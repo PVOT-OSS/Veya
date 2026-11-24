@@ -186,6 +186,9 @@ class LexiconTest {
                 "unread",
                 "what's 18% of 240",
                 "2+2",
+                "5 miles in km",
+                "how many cups in a liter",
+                "convert 212 f to celsius",
                 "square root of 81",
             )
         val ids =
@@ -214,6 +217,7 @@ class LexiconTest {
                 "command.call",
                 "command.text",
                 "math.calculate",
+                "math.convert",
             )
         var matched = 0
         ids.forEach { id ->

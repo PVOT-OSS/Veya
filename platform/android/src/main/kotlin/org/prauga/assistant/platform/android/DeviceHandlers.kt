@@ -7,6 +7,7 @@ import android.content.Context
 import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.platform.android.handlers.BatteryHandler
 import org.prauga.assistant.platform.android.handlers.CalculateHandler
+import org.prauga.assistant.platform.android.handlers.ConvertHandler
 import org.prauga.assistant.platform.android.handlers.DateHandler
 import org.prauga.assistant.platform.android.handlers.DeviceInfoHandler
 import org.prauga.assistant.platform.android.handlers.OpenAppHandler
@@ -28,6 +29,7 @@ object DeviceHandlers {
             DateHandler(context, lexicon),
             DeviceInfoHandler(context, lexicon),
             CalculateHandler(context, lexicon),
+            ConvertHandler(context, lexicon),
         )
     }
 }

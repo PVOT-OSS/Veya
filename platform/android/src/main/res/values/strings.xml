@@ -13,6 +13,7 @@
     <string name="intent_date">Today\'s date</string>
     <string name="intent_device_info">Device information</string>
     <string name="intent_calculate">Calculate</string>
+    <string name="intent_convert">Convert units</string>
 
     <string name="battery_level">Battery is at %1$d%%.</string>
     <string name="battery_level_charging">Battery is at %1$d%% and charging.</string>
@@ -25,6 +26,8 @@
     <string name="calculate_result">%1$s = %2$s</string>
     <string name="calculate_divide_by_zero">That divides by zero, so it has no answer.</string>
     <string name="calculate_undefined">That has no answer as a real number.</string>
+    <string name="convert_result">%1$s is %2$s %3$s.</string>
+    <string name="convert_unclear">I couldn\'t tell which units to convert between.</string>
     <string name="app_question">Which app should I open?</string>
     <string name="app_opening">Opening %1$s.</string>
     <string name="app_not_found">I couldn\'t find an app called “%1$s”.</string>

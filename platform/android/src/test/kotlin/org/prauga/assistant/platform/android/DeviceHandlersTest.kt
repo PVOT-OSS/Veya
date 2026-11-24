@@ -102,4 +102,19 @@ class DeviceHandlersTest {
         assertEquals(Resolution.NoMatch, engine.resolve("42"))
         assertEquals("device.battery", intentOf("battery 50%"))
     }
+
+    @Test
+    fun convertsUnits() {
+        fun answer(text: String): String {
+            val candidate = (engine.resolve(text) as Resolution.Matched).candidate
+            return runBlocking {
+                (candidate.handler.execute(candidate.match) as IntentOutcome.Reply).text
+            }
+        }
+        assertEquals("5 miles is 8.04672 km.", answer("5 miles in km"))
+        assertEquals("212 f is 100 celsius.", answer("Convert 212 F to Celsius"))
+        assertEquals("a liter is 4.226753 cups.", answer("how many cups in a liter?"))
+        assertEquals("100 km/h is 62.137119 mph.", answer("what's 100 km/h in mph"))
+        assertEquals("app.open", intentOf("open maps in organic maps"))
+    }
 }

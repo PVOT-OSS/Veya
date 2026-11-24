@@ -374,3 +374,210 @@ the
 0.95 (what's|what is|whats|calculate|compute|how much is|work out|solve|evaluate)( the)? {subject}
 0.7 {subject}
 
+# ---------------------------------------------------------------------------------------------
+# Built-in answers: unit conversions. Each value is the unit's size in its kind's base unit.
+# ---------------------------------------------------------------------------------------------
+
+[values unit.length]   # metres
+mm = 0.001
+millimeter = 0.001
+millimeters = 0.001
+millimetre = 0.001
+millimetres = 0.001
+cm = 0.01
+centimeter = 0.01
+centimeters = 0.01
+centimetre = 0.01
+centimetres = 0.01
+m = 1
+meter = 1
+meters = 1
+metre = 1
+metres = 1
+km = 1000
+kilometer = 1000
+kilometers = 1000
+kilometre = 1000
+kilometres = 1000
+inch = 0.0254
+inches = 0.0254
+ft = 0.3048
+foot = 0.3048
+feet = 0.3048
+yd = 0.9144
+yard = 0.9144
+yards = 0.9144
+mi = 1609.344
+mile = 1609.344
+miles = 1609.344
+nautical mile = 1852
+nautical miles = 1852
+
+[values unit.mass]   # kilograms
+mg = 0.000001
+milligram = 0.000001
+milligrams = 0.000001
+g = 0.001
+gram = 0.001
+grams = 0.001
+kg = 1
+kilo = 1
+kilos = 1
+kilogram = 1
+kilograms = 1
+tonne = 1000
+tonnes = 1000
+oz = 0.028349523125
+ounce = 0.028349523125
+ounces = 0.028349523125
+lb = 0.45359237
+lbs = 0.45359237
+pound = 0.45359237
+pounds = 0.45359237
+stone = 6.35029318
+stones = 6.35029318
+
+[values unit.volume]   # litres
+ml = 0.001
+milliliter = 0.001
+milliliters = 0.001
+millilitre = 0.001
+millilitres = 0.001
+cl = 0.01
+dl = 0.1
+l = 1
+liter = 1
+liters = 1
+litre = 1
+litres = 1
+tsp = 0.00492892159375
+teaspoon = 0.00492892159375
+teaspoons = 0.00492892159375
+tbsp = 0.01478676478125
+tablespoon = 0.01478676478125
+tablespoons = 0.01478676478125
+fl oz = 0.0295735295625
+fluid ounce = 0.0295735295625
+fluid ounces = 0.0295735295625
+cup = 0.2365882365
+cups = 0.2365882365
+pint = 0.473176473
+pints = 0.473176473
+quart = 0.946352946
+quarts = 0.946352946
+gal = 3.785411784
+gallon = 3.785411784
+gallons = 3.785411784
+
+[values unit.area]   # square metres
+square meter = 1
+square meters = 1
+square metre = 1
+square metres = 1
+sq m = 1
+square kilometer = 1000000
+square kilometers = 1000000
+square kilometre = 1000000
+square kilometres = 1000000
+sq km = 1000000
+square foot = 0.09290304
+square feet = 0.09290304
+sq ft = 0.09290304
+square mile = 2589988.110336
+square miles = 2589988.110336
+acre = 4046.8564224
+acres = 4046.8564224
+hectare = 10000
+hectares = 10000
+ha = 10000
+
+[values unit.speed]   # kilometres per hour
+km/h = 1
+kmh = 1
+kph = 1
+kilometers per hour = 1
+kilometres per hour = 1
+mph = 1.609344
+miles per hour = 1.609344
+m/s = 3.6
+meters per second = 3.6
+metres per second = 3.6
+knot = 1.852
+knots = 1.852
+
+[values unit.data]   # bytes
+bit = 0.125
+bits = 0.125
+byte = 1
+bytes = 1
+kb = 1000
+kilobyte = 1000
+kilobytes = 1000
+mb = 1000000
+megabyte = 1000000
+megabytes = 1000000
+gb = 1000000000
+gigabyte = 1000000000
+gigabytes = 1000000000
+tb = 1000000000000
+terabyte = 1000000000000
+terabytes = 1000000000000
+kib = 1024
+mib = 1048576
+gib = 1073741824
+
+[values unit.time]   # seconds
+second = 1
+seconds = 1
+sec = 1
+secs = 1
+minute = 60
+minutes = 60
+min = 60
+mins = 60
+hour = 3600
+hours = 3600
+hr = 3600
+hrs = 3600
+day = 86400
+days = 86400
+week = 604800
+weeks = 604800
+year = 31536000
+years = 31536000
+
+[values unit.temperature.zero]   # the unit's reading at 0 °C
+c = 0
+°c = 0
+celsius = 0
+degrees celsius = 0
+centigrade = 0
+f = 32
+°f = 32
+fahrenheit = 32
+degrees fahrenheit = 32
+k = 273.15
+kelvin = 273.15
+
+[values unit.temperature.degree]   # the unit's degrees per 1 °C
+c = 1
+°c = 1
+celsius = 1
+degrees celsius = 1
+centigrade = 1
+f = 1.8
+°f = 1.8
+fahrenheit = 1.8
+degrees fahrenheit = 1.8
+k = 1
+kelvin = 1
+
+[words convert.to]
+to | in | into | as
+
+[intent math.convert]
+0.95 (convert|change) {source} <convert.to> {target}
+0.95 how (many|much) {target} (are |is )?(there )?in {source}
+0.9 (what's|what is|whats) {source} <convert.to> {target}
+0.9 {source} <convert.to> {target}
+
