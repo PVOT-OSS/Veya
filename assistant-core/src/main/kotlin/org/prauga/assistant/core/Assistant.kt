@@ -12,11 +12,18 @@ import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.Resolution
 
 class Assistant(
-    private val engine: IntentEngine,
+    private val engines: () -> IntentEngine,
     private val store: ConversationStore,
     private val clock: () -> Long = System::currentTimeMillis,
     private val nanoTime: () -> Long = System::nanoTime,
 ) {
+    constructor(
+        engine: IntentEngine,
+        store: ConversationStore,
+        clock: () -> Long = System::currentTimeMillis,
+        nanoTime: () -> Long = System::nanoTime,
+    ) : this({ engine }, store, clock, nanoTime)
+
     fun submit(conversationId: String?, text: String): Flow<AssistantEvent> = flow {
         val trimmed = text.trim()
         require(trimmed.isNotEmpty()) { "Nothing to submit" }
@@ -24,7 +31,7 @@ class Assistant(
         val id = conversationId ?: store.startConversation(trimmed.take(TITLE_LENGTH), clock())
         emit(AssistantEvent.TurnStarted(id))
         store.append(id, StoredMessage(MessageKind.USER, trimmed, clock()))
-        respond(id, engine.resolve(trimmed), started)
+        respond(id, engines().resolve(trimmed), started)
     }
 
     /**
@@ -42,6 +49,7 @@ class Assistant(
         val started = nanoTime()
         emit(AssistantEvent.TurnStarted(conversationId))
         store.append(conversationId, StoredMessage(MessageKind.USER, trimmed, clock()))
+        val engine = engines()
         val fresh = engine.resolve(trimmed)
         val resolution =
             if (fresh != Resolution.NoMatch) fresh
@@ -52,7 +60,7 @@ class Assistant(
     fun choose(conversationId: String, choice: IntentChoice): Flow<AssistantEvent> = flow {
         val started = nanoTime()
         emit(AssistantEvent.TurnStarted(conversationId))
-        respond(conversationId, engine.resolve(choice.intentId, choice.entities), started)
+        respond(conversationId, engines().resolve(choice.intentId, choice.entities), started)
     }
 
     private suspend fun FlowCollector<AssistantEvent>.respond(
