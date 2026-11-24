@@ -12,10 +12,14 @@ object Latency {
     const val ITERATIONS = 20_000
     private const val NANOS_PER_MICRO = 1_000.0
 
-    inline fun measure(name: String, crossinline operation: () -> Unit) {
+    inline fun measure(
+        name: String,
+        iterations: Int = ITERATIONS,
+        crossinline operation: () -> Unit,
+    ) {
         val warmUpEnd = System.nanoTime() + WARM_UP_NANOS
         while (System.nanoTime() < warmUpEnd) operation()
-        val samples = LongArray(ITERATIONS)
+        val samples = LongArray(iterations)
         val bytesBefore = allocatedBytes()
         for (i in samples.indices) {
             val start = System.nanoTime()

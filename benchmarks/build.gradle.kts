@@ -12,6 +12,7 @@ dependencies {
     androidTestImplementation(project(":intent-engine"))
     androidTestImplementation(project(":context-engine"))
     androidTestImplementation(project(":platform:android"))
+    androidTestImplementation(project(":capabilities"))
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.kotlinx.coroutines.core)
