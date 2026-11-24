@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<resources>
+    <string name="capability_map">Maps</string>
+    <string name="capability_map_verb">Show places and directions</string>
+    <string name="capability_browse">Browse the web</string>
+    <string name="capability_browse_verb">Open links</string>
+    <string name="capability_web_search">Web search</string>
+    <string name="capability_web_search_verb">Search the web</string>
+    <string name="capability_app_search">Search inside apps</string>
+    <string name="capability_app_search_verb">Search within an app</string>
+    <string name="capability_play_media">Play music and video</string>
+    <string name="capability_play_media_verb">Play something by name</string>
+    <string name="capability_view_audio">Audio files</string>
+    <string name="capability_view_audio_verb">Open audio</string>
+    <string name="capability_view_video">Videos</string>
+    <string name="capability_view_video_verb">Open videos</string>
+    <string name="capability_view_image">Photos</string>
+    <string name="capability_view_image_verb">Open photos</string>
+    <string name="capability_view_pdf">PDF documents</string>
+    <string name="capability_view_pdf_verb">Open PDFs</string>
+    <string name="capability_view_text_document">Documents</string>
+    <string name="capability_view_text_document_verb">Open documents</string>
+    <string name="capability_view_spreadsheet">Spreadsheets</string>
+    <string name="capability_view_spreadsheet_verb">Open spreadsheets</string>
+    <string name="capability_view_presentation">Presentations</string>
+    <string name="capability_view_presentation_verb">Open slides</string>
+    <string name="capability_take_photo">Camera</string>
+    <string name="capability_take_photo_verb">Take a photo</string>
+    <string name="capability_record_video">Video camera</string>
+    <string name="capability_record_video_verb">Record a video</string>
+    <string name="capability_record_audio">Voice recorder</string>
+    <string name="capability_record_audio_verb">Record audio</string>
+    <string name="capability_set_alarm">Alarms</string>
+    <string name="capability_set_alarm_verb">Set an alarm</string>
+    <string name="capability_set_timer">Timers</string>
+    <string name="capability_set_timer_verb">Set a timer</string>
+    <string name="capability_show_alarms">Clock</string>
+    <string name="capability_show_alarms_verb">Show your alarms</string>
+    <string name="capability_add_event">Calendar</string>
+    <string name="capability_add_event_verb">Add an event</string>
+    <string name="capability_add_contact">Contacts</string>
+    <string name="capability_add_contact_verb">Add a contact</string>
+    <string name="capability_dial">Phone</string>
+    <string name="capability_dial_verb">Call a number</string>
+    <string name="capability_text">Messaging</string>
+    <string name="capability_text_verb">Send a text</string>
+    <string name="capability_email">Email</string>
+    <string name="capability_email_verb">Write an email</string>
+    <string name="capability_share_text">Sharing</string>
+    <string name="capability_share_text_verb">Share text</string>
+    <string name="capability_no_default">No default app</string>
+</resources>

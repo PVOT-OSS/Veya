@@ -49,6 +49,8 @@ include(":inference:litert")
 
 include(":context-engine")
 
+include(":capabilities")
+
 include(":benchmarks")
 
 include(":assistant-sdk")
