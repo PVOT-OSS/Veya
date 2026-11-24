@@ -242,8 +242,22 @@ class CapabilityCommandsTest {
     }
 
     @Test
-    fun aMissingDurationOrTimeIsAskedFor() {
-        assertTrue(engine.resolve("set a timer") is Resolution.MissingParameter)
-        assertTrue(engine.resolve("set an alarm") is Resolution.MissingParameter)
+    fun aMissingDetailIsAskedFor() {
+        listOf(
+                "set a timer",
+                "set an alarm",
+                "call",
+                "navigate",
+                "search the web",
+                "play",
+                "open a website",
+                "add an event",
+            )
+            .forEach { text ->
+                val resolution = engine.resolve(text)
+                assertTrue("$text → $resolution", resolution is Resolution.MissingParameter)
+                val question = (resolution as Resolution.MissingParameter).parameter.question
+                assertTrue(text, !question.isNullOrBlank())
+            }
     }
 }

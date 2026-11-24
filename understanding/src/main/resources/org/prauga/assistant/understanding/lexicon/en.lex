@@ -284,6 +284,7 @@ in | on | with | using | via | through
 0.9 (what|which) alarms( do i have| are set| have i set)( {subject})?
 
 [intent command.map]
+0.9 (navigate|directions|get directions|give me directions|show me the way)
 0.9 (get |give me |show me |find )?(the )?directions (to|for) {subject}
 0.9 navigate( me)? to {subject}
 0.9 take me to {subject}
@@ -293,16 +294,19 @@ in | on | with | using | via | through
 0.9 where is {subject} on the map
 
 [intent command.web]
+0.95 (search the web|search online|web search|search the internet|google something)
 0.95 search (the )?(web|internet|online) for {subject}
 0.95 (search|look up|search for) {subject} (online|on the web|on the internet)
 0.95 web search( for)? {subject}
 0.9 google {subject}
 
 [intent command.play]
+0.84 play( something)?
 0.84 play( me)? {subject}
 0.84 listen to {subject}
 
 [intent command.link]
+0.95 (open|visit|go to) (a )?(link|website|web address|web page|url|site)
 0.95 (open|go to|visit|browse to|load) {subject=(?:https?://)?(?:[\p{L}\p{N}-]+\.)+\p{L}{2,}(?::\d+)?(?:[/?#]\S*)?(?: .+)?}
 0.9 {subject=(?:https?://)?(?:[\p{L}\p{N}-]+\.)+\p{L}{2,}(?::\d+)?(?:[/?#]\S*)?}
 
@@ -317,11 +321,13 @@ in | on | with | using | via | through
 0.92 start( a| an)?( voice| audio| sound)? recording( {subject})?
 
 [intent command.event]
+0.95 (add|create|schedule|make|new)( an| a)? (event|meeting|appointment)( to (my |the )?calendar)?
 0.95 (add|put|schedule|create|make)( an| a)?( event| meeting| appointment)?( called| named| for)? {subject} (to|in|on|into) (my |the )?calendar
 0.9 (add|schedule|create|make|plan|book)( an| a)? (event|meeting|appointment)( called| named| for)? {subject}
 0.85 (add|schedule|plan|book) {subject}
 
 [intent command.call]
+0.95 (call|dial)( a number| someone)?
 0.95 (call|dial|ring|phone) {subject=\+?[\d(][\d ()-]*\d(?: .+)?}
 
 [intent command.text]

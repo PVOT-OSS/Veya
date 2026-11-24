@@ -34,7 +34,7 @@ class EventCommand(
     override val unclear = R.string.command_event_unclear
 
     override fun understands(subject: String?): Boolean =
-        subject != null && split(subject, now()) != null
+        subject == null || split(subject, now()) != null
 
     override fun request(subject: String?, match: IntentMatch): Plan? {
         val (title, time) = subject?.let { split(it, now()) } ?: return null
