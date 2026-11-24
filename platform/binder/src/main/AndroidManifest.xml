@@ -28,6 +28,10 @@
                 <action android:name="org.prauga.assistant.sdk.action.REGISTRY" />
             </intent-filter>
         </service>
+
+        <service
+            android:name="org.prauga.assistant.sdk.ContextProviderService"
+            tools:node="remove" />
     </application>
 
 </manifest>
