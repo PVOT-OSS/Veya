@@ -345,6 +345,16 @@ in | on | with | using | via | through
 0.95 (call|dial)( a number| someone)?
 0.95 (call|dial|ring|phone) {subject=\+?[\d(][\d ()-]*\d(?: .+)?}
 
+[intent command.call.contact]   # a name, not a number: needs the phone's contacts
+0.9 (call|ring|phone|dial) {subject}
+
+[intent command.text.contact]
+0.9 (text|message|sms)( to)? {subject}
+0.9 send (a )?(text|message|sms) to {subject}
+
+[words text.body.lead]   # "text mom saying running late"
+saying | that says | that | with
+
 [intent command.text]
 0.95 (text|message|sms)( to)? {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?
 0.95 send (a )?(text|message|sms) to {number=\+?[\d(][\d ()-]*\d}(?:( saying| that says| that| with)?:? {subject})?

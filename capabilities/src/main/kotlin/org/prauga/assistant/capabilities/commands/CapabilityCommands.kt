@@ -13,6 +13,7 @@ object CapabilityCommands {
         context: Context,
         lexicon: Lexicon,
         now: () -> ZonedDateTime = ZonedDateTime::now,
+        contacts: ContactDirectory = AndroidContacts(context),
     ): List<IntentHandler> {
         val router = AppRouter(context)
         return listOf(
@@ -26,6 +27,8 @@ object CapabilityCommands {
             EventCommand(context, router, lexicon, now),
             CallCommand(context, router, lexicon),
             TextCommand(context, router, lexicon),
-        ) + CaptureCommand.all(context, router, lexicon)
+        ) +
+            CaptureCommand.all(context, router, lexicon) +
+            ContactCommand.both(context, router, lexicon, contacts)
     }
 }

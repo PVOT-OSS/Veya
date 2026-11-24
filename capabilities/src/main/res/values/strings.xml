@@ -93,6 +93,12 @@
     <string name="command_text">Text a number</string>
     <string name="command_text_done">Opening %2$s with a text to %1$s ready to send.</string>
     <string name="command_number_unclear">That doesn\'t look like a phone number.</string>
+    <string name="command_call_contact">Call a contact</string>
+    <string name="command_text_contact">Text a contact</string>
+    <string name="command_call_contact_done">Opening %3$s with %1$s (%2$s) ready to call.</string>
+    <string name="command_text_contact_done">Opening %3$s with a text to %1$s (%2$s) ready to send.</string>
+    <string name="contact_not_found">I couldn\'t find “%1$s” in your contacts.</string>
+    <string name="contact_several">Several contacts match “%1$s”: %2$s. Say the full name.</string>
     <string name="command_timer_question">How long should the timer run?</string>
     <string name="command_alarm_question">What time should the alarm go off?</string>
     <string name="command_map_question">Which place?</string>

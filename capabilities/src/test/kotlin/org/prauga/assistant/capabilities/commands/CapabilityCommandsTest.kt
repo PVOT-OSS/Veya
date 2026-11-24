@@ -49,10 +49,24 @@ class CapabilityCommandsTest {
 
             override fun isGranted(permission: String) = true
         }
+    private val people =
+        listOf(
+            ContactPhone(1, "Sam Lee", "+15550101", primary = false, mobile = true),
+            ContactPhone(1, "Sam Lee", "+15550102", primary = true, mobile = false),
+            ContactPhone(2, "Mom", "+15550200", primary = false, mobile = true),
+            ContactPhone(3, "Samira Khan", "+15550300", primary = false, mobile = true),
+            ContactPhone(4, "Alex Roy", "+15550400", primary = false, mobile = true),
+            ContactPhone(5, "Alex Kim", "+15550500", primary = false, mobile = true),
+        )
+    private val contacts = ContactDirectory { word ->
+        people.filter { person ->
+            person.name.split(' ').any { it.startsWith(word, ignoreCase = true) }
+        }
+    }
     private val engine =
         IntentEngine(
             DeviceHandlers.create(context, lexicon) +
-                CapabilityCommands.create(context, lexicon) { now },
+                CapabilityCommands.create(context, lexicon, { now }, contacts),
             gate,
             Utterance.Fillers.of(lexicon),
         )
@@ -138,7 +152,7 @@ class CapabilityCommandsTest {
         assertEquals("app.open", intentOf("start maps"))
         assertEquals("settings.open", intentOf("open wifi settings"))
         assertNull(intentOf("add a contact"))
-        assertNull(intentOf("call mom"))
+        assertEquals(ContactCommand.CALL_ID, intentOf("call mom"))
     }
 
     @Test
@@ -259,5 +273,57 @@ class CapabilityCommandsTest {
                 val question = (resolution as Resolution.MissingParameter).parameter.question
                 assertTrue(text, !question.isNullOrBlank())
             }
+    }
+
+    @Test
+    fun callsAndTextsPeopleByName() {
+        app("com.android.dialer", "Phone", filter(Intent.ACTION_DIAL, scheme = "tel"))
+        app("com.android.messaging", "Messaging", filter(Intent.ACTION_SENDTO, scheme = "smsto"))
+        assertEquals(ContactCommand.CALL_ID, intentOf("call Sam Lee"))
+        assertEquals(CallCommand.ID, intentOf("call 555 0100"))
+        val call = run("Call Sam Lee") as IntentOutcome.Reply
+        assertEquals("+15550102", started().data?.schemeSpecificPart)
+        assertEquals("Opening Phone with Sam Lee (+15550102) ready to call.", call.text)
+        run("text mom saying running late")
+        val text = started()
+        assertEquals("+15550200", text.data?.schemeSpecificPart)
+        assertEquals("running late", text.getStringExtra("sms_body"))
+        run("message Sam Lee I'm outside")
+        assertEquals("I'm outside", started().getStringExtra("sms_body"))
+    }
+
+    @Test
+    fun saysWhenANameIsMissingOrUnclear() {
+        val several = run("call alex") as IntentOutcome.Failed
+        assertEquals(
+            "Several contacts match “alex”: Alex Roy, Alex Kim. Say the full name.",
+            several.text,
+        )
+        assertTrue(run("call bob") is IntentOutcome.Failed)
+        assertNull(shadowOf(context).nextStartedActivity)
+    }
+
+    @Test
+    fun aFirstNameIsEnoughWhenOnlyOnePersonHasIt() {
+        assertEquals(
+            ContactMatch.Found.One("Samira Khan", "+15550300", "hi"),
+            ContactMatch.find("samira hi", contacts),
+        )
+    }
+
+    @Test
+    fun contactsNeedPermissionFirst() {
+        val denied =
+            IntentEngine(
+                CapabilityCommands.create(context, lexicon, { now }, contacts),
+                object : PlatformGate {
+                    override val sdkInt = 35
+
+                    override fun isGranted(permission: String) = false
+                },
+                Utterance.Fillers.of(lexicon),
+            )
+        assertTrue(denied.resolve("call Sam Lee") is Resolution.NeedsPermission)
+        assertTrue(denied.resolve("call 555 0100") is Resolution.Matched)
     }
 }
