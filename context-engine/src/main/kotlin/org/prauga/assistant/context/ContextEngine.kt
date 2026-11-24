@@ -40,78 +40,130 @@ class ContextEngine(
         synchronized(cache) { cache.keys.removeAll { it.providerId == providerId } }
     }
 
-    suspend fun query(query: ContextQuery): ContextResult = coroutineScope {
-        val outcomes =
-            registered.value.values.map { provider -> async { ask(provider, query) } }.awaitAll()
-        val items =
-            outcomes
-                .flatMap { it.items }
-                .sortedWith(
-                    compareByDescending<ContextItem> { relevance(it, query.text) }
-                        .thenByDescending { it.timestamp }
-                )
-                .take(query.limit)
-        ContextResult(items, outcomes.mapNotNull { it.skipped })
-    }
-
-    private suspend fun ask(provider: ContextProvider, query: ContextQuery): Outcome {
-        val descriptor = provider.descriptor
-        val grant = grants.grantFor(descriptor)
-        if (!grant.enabled) return Outcome.skip(descriptor.id, SkipReason.NOT_GRANTED)
-        if (query.types.isNotEmpty() && query.types.none { it in descriptor.types }) {
-            return Outcome.skip(descriptor.id, SkipReason.TYPE_NOT_OFFERED)
-        }
+    suspend fun query(query: ContextQuery): ContextResult {
         val now = clock()
-        val key = CacheKey(descriptor.id, query)
-        val cached = synchronized(cache) { cache[key]?.takeIf { now - it.storedAt < CACHE_MILLIS } }
-        val raw =
-            cached?.items
-                ?: try {
-                    withTimeoutOrNull(providerTimeoutMillis) { provider.query(query) }
-                        ?: return Outcome.skip(descriptor.id, SkipReason.TIMED_OUT)
-                } catch (e: ContextProviderException) {
-                    return Outcome.skip(descriptor.id, SkipReason.FAILED)
+        val words = queryWords(query.text)
+        val top = TopItems(query.limit)
+        val skipped = ArrayList<SkippedProvider>()
+        val toFetch = ArrayList<Pending>()
+        for (provider in registered.value.values) {
+            val descriptor = provider.descriptor
+            val grant = grants.grantFor(descriptor)
+            if (!grant.enabled) {
+                skipped += SkippedProvider(descriptor.id, SkipReason.NOT_GRANTED)
+                continue
+            }
+            if (query.types.isNotEmpty() && query.types.none { it in descriptor.types }) {
+                skipped += SkippedProvider(descriptor.id, SkipReason.TYPE_NOT_OFFERED)
+                continue
+            }
+            val key = CacheKey(descriptor.id, query)
+            val cached =
+                synchronized(cache) { cache[key]?.takeIf { now - it.storedAt < CACHE_MILLIS } }
+            if (cached != null) {
+                collect(cached.items, descriptor, grant, query, words, now, top)
+            } else {
+                toFetch += Pending(provider, grant, key)
+            }
+        }
+        if (toFetch.isNotEmpty()) {
+            val fetched = coroutineScope {
+                toFetch.map { async { fetch(it.provider, query) } }.awaitAll()
+            }
+            for (i in toFetch.indices) {
+                val pending = toFetch[i]
+                val descriptor = pending.provider.descriptor
+                when (val outcome = fetched[i]) {
+                    is Fetch.Items -> {
+                        synchronized(cache) { cache[pending.key] = CachedItems(outcome.items, now) }
+                        collect(outcome.items, descriptor, pending.grant, query, words, now, top)
+                    }
+                    is Fetch.Skipped -> skipped += SkippedProvider(descriptor.id, outcome.reason)
                 }
-        if (cached == null) synchronized(cache) { cache[key] = CachedItems(raw, now) }
-        val ceiling = minOf(grant.maxSensitivity, descriptor.maxSensitivity)
-        val accepted =
-            raw.asSequence()
-                .filter { it.source.packageName == descriptor.packageName }
-                .filter { it.expiresAt == null || it.expiresAt > now }
-                .filter { it.sensitivity <= ceiling }
-                .filter { query.types.isEmpty() || it.type in query.types }
-                .filter { query.since == null || it.timestamp >= query.since }
-                .take(maxItemsPerProvider)
-                .map { it.normalized() }
-                .toList()
-        return Outcome(accepted, null)
+            }
+        }
+        return ContextResult(top.drain { it.normalized() }, skipped)
     }
 
-    private fun ContextItem.normalized(): ContextItem =
-        copy(
-            title = title.trim().take(maxTitleChars),
-            content = content.trim().take(maxContentChars),
-            metadata =
+    private suspend fun fetch(provider: ContextProvider, query: ContextQuery): Fetch =
+        try {
+            withTimeoutOrNull(providerTimeoutMillis) { provider.query(query) }
+                ?.let { Fetch.Items(it) } ?: Fetch.Skipped(SkipReason.TIMED_OUT)
+        } catch (e: ContextProviderException) {
+            Fetch.Skipped(SkipReason.FAILED)
+        }
+
+    private fun collect(
+        items: List<ContextItem>,
+        descriptor: ContextProviderDescriptor,
+        grant: ContextGrant,
+        query: ContextQuery,
+        words: Array<String>,
+        now: Long,
+        top: TopItems,
+    ) {
+        val ceiling = minOf(grant.maxSensitivity, descriptor.maxSensitivity)
+        val since = query.since
+        var accepted = 0
+        for (i in items.indices) {
+            if (accepted == maxItemsPerProvider) return
+            val item = items[i]
+            if (item.source.packageName != descriptor.packageName) continue
+            val expiresAt = item.expiresAt
+            if (expiresAt != null && expiresAt <= now) continue
+            if (item.sensitivity > ceiling) continue
+            if (query.types.isNotEmpty() && item.type !in query.types) continue
+            if (since != null && item.timestamp < since) continue
+            accepted++
+            top.offer(relevance(item, words), item)
+        }
+    }
+
+    private fun ContextItem.normalized(): ContextItem {
+        val cleanTitle = title.trim().take(maxTitleChars)
+        val cleanContent = content.trim().take(maxContentChars)
+        val cleanMetadata =
+            if (
+                metadata.size <= MAX_METADATA_ENTRIES &&
+                    metadata.all { (k, v) ->
+                        k.length <= MAX_METADATA_CHARS && v.length <= MAX_METADATA_CHARS
+                    }
+            ) {
+                metadata
+            } else {
                 metadata.entries.take(MAX_METADATA_ENTRIES).associate {
                     it.key.take(MAX_METADATA_CHARS) to it.value.take(MAX_METADATA_CHARS)
-                },
-        )
-
-    private fun relevance(item: ContextItem, text: String?): Int {
-        val words = text?.lowercase()?.split(WHITESPACE)?.filter { it.length > 1 }.orEmpty()
-        if (words.isEmpty()) return 0
-        val title = item.title.lowercase()
-        val content = item.content.lowercase()
-        return words.sumOf { word ->
-            (if (word in title) TITLE_WEIGHT else 0) + (if (word in content) 1 else 0)
-        }
+                }
+            }
+        if (cleanTitle === title && cleanContent === content && cleanMetadata === metadata)
+            return this
+        return copy(title = cleanTitle, content = cleanContent, metadata = cleanMetadata)
     }
 
-    private data class Outcome(val items: List<ContextItem>, val skipped: SkippedProvider?) {
-        companion object {
-            fun skip(id: String, reason: SkipReason) =
-                Outcome(emptyList(), SkippedProvider(id, reason))
+    private fun relevance(item: ContextItem, words: Array<String>): Int {
+        var score = 0
+        for (word in words) {
+            if (item.title.contains(word, ignoreCase = true)) score += TITLE_WEIGHT
+            if (item.content.contains(word, ignoreCase = true)) score += 1
         }
+        return score
+    }
+
+    private fun queryWords(text: String?): Array<String> {
+        if (text.isNullOrBlank()) return NO_WORDS
+        return text.lowercase().split(WHITESPACE).filter { it.length > 1 }.toTypedArray()
+    }
+
+    private class Pending(
+        val provider: ContextProvider,
+        val grant: ContextGrant,
+        val key: CacheKey,
+    )
+
+    private sealed interface Fetch {
+        class Items(val items: List<ContextItem>) : Fetch
+
+        class Skipped(val reason: SkipReason) : Fetch
     }
 
     private data class CacheKey(val providerId: String, val query: ContextQuery)
@@ -128,5 +180,6 @@ class ContextEngine(
         private const val MAX_METADATA_CHARS = 200
         private const val TITLE_WEIGHT = 2
         private val WHITESPACE = Regex("\\s+")
+        private val NO_WORDS = emptyArray<String>()
     }
 }
