@@ -16,6 +16,7 @@ import com.google.ai.edge.litertlm.Message
 import com.google.ai.edge.litertlm.SamplerConfig
 import com.google.ai.edge.litertlm.SpeculativeDecodingConfig
 import com.google.ai.edge.litertlm.SpeculativeDecodingMode
+import com.google.ai.edge.litertlm.ThinkingConfig
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -160,6 +161,7 @@ class LiteRtInferenceEngine(private val cacheDir: String, private val nativeLibr
                 },
             samplerConfig = samplerConfig,
             maxOutputToken = sampling?.maxOutputTokens,
+            thinkingConfig = ThinkingConfig(enableThinking = sampling?.thinking == true),
         )
     }
 

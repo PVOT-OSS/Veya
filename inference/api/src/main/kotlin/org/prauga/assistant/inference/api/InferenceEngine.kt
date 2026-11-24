@@ -31,6 +31,7 @@ data class InferenceConfig(
     val maxContextTokens: Int? = null,
     val maxOutputTokens: Int? = null,
     val speculativeDecoding: Boolean = false,
+    val thinking: Boolean = false,
     val sampling: Sampling? = null,
 )
 
