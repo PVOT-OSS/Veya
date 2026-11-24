@@ -190,6 +190,11 @@ class LexiconTest {
                 "how many days until christmas",
                 "what date is 3 weeks from now",
                 "when is halloween",
+                "what's my next meeting",
+                "what's on my calendar tomorrow",
+                "am i free on friday",
+                "call sam lee",
+                "text mom saying hi",
                 "how many cups in a liter",
                 "convert 212 f to celsius",
                 "square root of 81",
@@ -223,6 +228,10 @@ class LexiconTest {
                 "math.convert",
                 "date.until",
                 "date.which",
+                "calendar.next",
+                "calendar.day",
+                "command.call.contact",
+                "command.text.contact",
             )
         var matched = 0
         ids.forEach { id ->

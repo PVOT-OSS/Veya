@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -19,6 +20,9 @@ import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PlatformGate
 import org.prauga.assistant.intent.Resolution
 import org.prauga.assistant.intent.Utterance
+import org.prauga.assistant.platform.android.handlers.CalendarEvent
+import org.prauga.assistant.platform.android.handlers.CalendarEvents
+import org.prauga.assistant.platform.android.handlers.CalendarHandler
 import org.prauga.assistant.platform.android.handlers.DateMathHandler
 import org.prauga.assistant.understanding.Lexicon
 import org.robolectric.RobolectricTestRunner
@@ -154,5 +158,50 @@ class DeviceHandlersTest {
             "That was Saturday, November 14, 2026.",
             reply(which, "what day was it 10 days ago"),
         )
+    }
+
+    @Test
+    fun readsTheCalendar() {
+        val clock = Clock.fixed(Instant.parse("2026-11-24T10:15:00Z"), ZoneOffset.UTC)
+        fun at(day: Int, hour: Int) =
+            ZonedDateTime.of(2026, 11, day, hour, 0, 0, 0, ZoneOffset.UTC)
+                .toInstant()
+                .toEpochMilli()
+        val all =
+            listOf(
+                CalendarEvent("Standup", at(24, 9), at(24, 10), allDay = false),
+                CalendarEvent("Dentist", at(24, 15), at(24, 16), allDay = false),
+                CalendarEvent("Holiday", at(25, 0), at(26, 0), allDay = true),
+                CalendarEvent("Lunch", at(25, 13), at(25, 14), allDay = false),
+            )
+        val events = CalendarEvents { from, to -> all.filter { it.end > from && it.begin < to } }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val next = CalendarHandler(context, lexicon, events, next = true, clock)
+        val day = CalendarHandler(context, lexicon, events, next = false, clock)
+        fun reply(handler: CalendarHandler, text: String): String {
+            val match =
+                requireNotNull(handler.match(Utterance(text, Utterance.Fillers.of(lexicon))))
+            return runBlocking { (handler.execute(match) as IntentOutcome.Reply).text }
+        }
+        assertTrue(reply(next, "what's my next meeting").startsWith("Your next event is “Dentist”"))
+        assertTrue(reply(day, "what's on my calendar today").startsWith("2 events today: "))
+        assertTrue(reply(day, "what do i have tomorrow").startsWith("2 events tomorrow: Holiday, "))
+        assertTrue(reply(day, "am i free on friday").startsWith("Nothing on your calendar on Fri"))
+        assertEquals(null, day.match(Utterance("what do i have for dinner")))
+    }
+
+    @Test
+    fun theCalendarNeedsPermissionFirst() {
+        val denied =
+            IntentEngine(
+                DeviceHandlers.create(ApplicationProvider.getApplicationContext(), lexicon),
+                object : PlatformGate {
+                    override val sdkInt = 35
+
+                    override fun isGranted(permission: String) = false
+                },
+                Utterance.Fillers.of(lexicon),
+            )
+        assertTrue(denied.resolve("what's my next meeting") is Resolution.NeedsPermission)
     }
 }

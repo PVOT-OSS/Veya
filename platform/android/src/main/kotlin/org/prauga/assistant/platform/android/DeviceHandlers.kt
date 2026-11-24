@@ -5,8 +5,11 @@ package org.prauga.assistant.platform.android
 
 import android.content.Context
 import org.prauga.assistant.intent.IntentHandler
+import org.prauga.assistant.platform.android.handlers.AndroidCalendarEvents
 import org.prauga.assistant.platform.android.handlers.BatteryHandler
 import org.prauga.assistant.platform.android.handlers.CalculateHandler
+import org.prauga.assistant.platform.android.handlers.CalendarEvents
+import org.prauga.assistant.platform.android.handlers.CalendarHandler
 import org.prauga.assistant.platform.android.handlers.ConvertHandler
 import org.prauga.assistant.platform.android.handlers.DateHandler
 import org.prauga.assistant.platform.android.handlers.DateMathHandler
@@ -18,7 +21,11 @@ import org.prauga.assistant.platform.android.handlers.TorchHandler
 import org.prauga.assistant.understanding.Lexicon
 
 object DeviceHandlers {
-    fun create(context: Context, lexicon: Lexicon): List<IntentHandler> {
+    fun create(
+        context: Context,
+        lexicon: Lexicon,
+        calendar: CalendarEvents = AndroidCalendarEvents(context),
+    ): List<IntentHandler> {
         val launcher = ActivityLauncher(context)
         return listOf(
             BatteryHandler(context, lexicon),
@@ -33,6 +40,8 @@ object DeviceHandlers {
             ConvertHandler(context, lexicon),
             DateMathHandler(context, lexicon, until = true),
             DateMathHandler(context, lexicon, until = false),
+            CalendarHandler(context, lexicon, calendar, next = true),
+            CalendarHandler(context, lexicon, calendar, next = false),
         )
     }
 }

@@ -16,6 +16,8 @@
     <string name="intent_convert">Convert units</string>
     <string name="intent_date_until">Days until a date</string>
     <string name="intent_date_which">Find a date</string>
+    <string name="intent_calendar_next">Your next event</string>
+    <string name="intent_calendar_day">Your calendar for a day</string>
 
     <string name="battery_level">Battery is at %1$d%%.</string>
     <string name="battery_level_charging">Battery is at %1$d%% and charging.</string>
@@ -41,6 +43,18 @@
     <plurals name="date_ago">
         <item quantity="one">%1$s was %2$d day ago, on %3$s.</item>
         <item quantity="other">%1$s was %2$d days ago, on %3$s.</item>
+    </plurals>
+    <string name="calendar_next">Your next event is “%1$s”, %2$s.</string>
+    <string name="calendar_next_none">Nothing coming up on your calendar.</string>
+    <string name="calendar_day_none">Nothing on your calendar %1$s.</string>
+    <string name="calendar_day_item">%1$s %2$s</string>
+    <string name="calendar_today">today</string>
+    <string name="calendar_tomorrow">tomorrow</string>
+    <string name="calendar_on">on %1$s</string>
+    <string name="calendar_untitled">(no title)</string>
+    <plurals name="calendar_day">
+        <item quantity="one">%2$d event %1$s: %3$s.</item>
+        <item quantity="other">%2$d events %1$s: %3$s.</item>
     </plurals>
     <string name="app_question">Which app should I open?</string>
     <string name="app_opening">Opening %1$s.</string>

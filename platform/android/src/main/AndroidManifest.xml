@@ -5,6 +5,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+
     <uses-feature
         android:name="android.hardware.camera.flash"
         android:required="false" />

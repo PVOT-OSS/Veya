@@ -652,3 +652,19 @@ ago | before today
 0.95 what (date|day)( of the week)?( is it| will it be| was it| is| was| falls on)? {subject}
 0.95 when is {subject}
 
+# ---------------------------------------------------------------------------------------------
+# The phone's calendars
+# ---------------------------------------------------------------------------------------------
+
+[intent calendar.next]
+0.95 (what's|what is|when is|when's)( my)? next (meeting|event|appointment|call)
+0.95 (my )?next (meeting|event|appointment)
+0.95 what's next on my (calendar|schedule|agenda)
+
+[intent calendar.day]
+0.95 (what's|what is) on my (calendar|schedule|agenda)( {subject})?
+0.95 (show|check)( me)? my (calendar|schedule|agenda)( for)?( {subject})?
+0.95 what do i have( on)? {subject}
+0.95 (am i|are we) (free|busy) {subject}
+0.9 (my )?(calendar|schedule|agenda) {subject}
+
