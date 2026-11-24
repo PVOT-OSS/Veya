@@ -93,4 +93,19 @@
     <string name="command_text">Text a number</string>
     <string name="command_text_done">Opening %2$s with a text to %1$s ready to send.</string>
     <string name="command_number_unclear">That doesn\'t look like a phone number.</string>
+
+    <!-- Example requests shown on the home screen; each must be understood by the lexicon. -->
+    <string name="capability_map_example">Directions to the nearest pharmacy</string>
+    <string name="capability_web_search_example">Search the web for tomorrow\'s weather</string>
+    <string name="capability_play_media_example">Play some jazz</string>
+    <string name="capability_browse_example">Open wikipedia.org</string>
+    <string name="capability_take_photo_example">Take a photo</string>
+    <string name="capability_record_video_example">Record a video</string>
+    <string name="capability_record_audio_example">Record a voice note</string>
+    <string name="capability_set_alarm_example">Wake me up at 7am</string>
+    <string name="capability_set_timer_example">Set a timer for 10 minutes</string>
+    <string name="capability_show_alarms_example">Show my alarms</string>
+    <string name="capability_add_event_example">Add lunch with Alex tomorrow at 1pm</string>
+    <string name="capability_dial_example">Call 555 0100</string>
+    <string name="capability_text_example">Text 555 0100 running late</string>
 </resources>

@@ -25,6 +25,7 @@ import org.prauga.assistant.integrations.IntegrationsScreen
 fun AppScaffold() {
     val conversation: ConversationViewModel = hiltViewModel()
     var stack by rememberSaveable { mutableStateOf(listOf(Screen.HOME)) }
+    var draft by rememberSaveable { mutableStateOf<String?>(null) }
     val open: (Screen) -> Unit = { stack = stack + it }
     val back: () -> Unit = { if (stack.size > 1) stack = stack.dropLast(1) }
     BackHandler(enabled = stack.size > 1, onBack = back)
@@ -36,7 +37,10 @@ fun AppScaffold() {
         when (stack.last()) {
             Screen.HOME ->
                 HomeScreen(
-                    onAsk = { open(Screen.ASK) },
+                    onAsk = { text ->
+                        draft = text
+                        open(Screen.ASK)
+                    },
                     onOpenConversation = { id ->
                         conversation.onEvent(ConversationEvent.Open(id))
                         open(Screen.ASK)
@@ -47,6 +51,8 @@ fun AppScaffold() {
             Screen.ASK ->
                 ConversationScreen(
                     conversation,
+                    draft = draft,
+                    onDraftTaken = { draft = null },
                     onBack = back,
                     onShowHistory = { open(Screen.HISTORY) },
                 )

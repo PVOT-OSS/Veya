@@ -61,21 +61,31 @@ import org.prauga.assistant.core.IntentChoice
 @Composable
 fun ConversationScreen(
     viewModel: ConversationViewModel,
+    draft: String?,
+    onDraftTaken: () -> Unit,
     onBack: () -> Unit,
     onShowHistory: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ConversationContent(state, viewModel::onEvent, onBack, onShowHistory)
+    ConversationContent(state, viewModel::onEvent, draft, onDraftTaken, onBack, onShowHistory)
 }
 
 @Composable
 private fun ConversationContent(
     state: ConversationUiState,
     onEvent: (ConversationEvent) -> Unit,
+    draft: String?,
+    onDraftTaken: () -> Unit,
     onBack: () -> Unit,
     onShowHistory: () -> Unit,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(draft) {
+        if (draft != null) {
+            input = draft
+            onDraftTaken()
+        }
+    }
     val send = {
         if (input.isNotBlank() && !state.busy) {
             onEvent(ConversationEvent.Submit(input))

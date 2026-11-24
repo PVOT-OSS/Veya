@@ -23,6 +23,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.prauga.assistant.capabilities.Capability
+import org.prauga.assistant.capabilities.example
 import org.prauga.assistant.intent.IntentEngine
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PlatformGate
@@ -119,6 +121,15 @@ class CapabilityCommandsTest {
                 "text 5551234 running late" to TextCommand.ID,
             )
             .forEach { (text, id) -> assertEquals(text, id, intentOf(text)) }
+    }
+
+    @Test
+    fun everyHomeExampleIsUnderstoodAsItsCommand() {
+        Capability.entries.forEach { capability ->
+            val example = capability.example?.let(context::getString) ?: return@forEach
+            val id = intentOf(example)
+            assertTrue("$capability: “$example” → $id", id?.startsWith("command.") == true)
+        }
     }
 
     @Test

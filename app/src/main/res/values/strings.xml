@@ -47,6 +47,9 @@
         <item quantity="other">%d apps</item>
     </plurals>
     <string name="home_capability_sheet_default">Default</string>
+    <string name="home_capability_example">“%1$s”</string>
+    <string name="home_capability_try">Try it</string>
+    <string name="home_capability_apps_title">Apps that can do this</string>
     <string name="home_connected_title">Apps sharing with Veya</string>
     <plurals name="home_connected_summary">
         <item quantity="one">%1$d of %2$d supported app turned on</item>

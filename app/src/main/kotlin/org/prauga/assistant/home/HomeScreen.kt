@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +55,7 @@ import org.prauga.assistant.core.ConversationSummary
 
 @Composable
 fun HomeScreen(
-    onAsk: () -> Unit,
+    onAsk: (draft: String?) -> Unit,
     onOpenConversation: (String) -> Unit,
     onShowIntegrations: () -> Unit,
     onShowHistory: () -> Unit,
@@ -125,7 +126,7 @@ fun HomeScreen(
                     )
                 )
         )
-        AskPill(onAsk, Modifier.align(Alignment.BottomCenter))
+        AskPill({ onAsk(null) }, Modifier.align(Alignment.BottomCenter))
     }
     val sheetTile = state.capabilities.firstOrNull { it.capability == opened }
     PvotBottomSheet(
@@ -133,6 +134,33 @@ fun HomeScreen(
         onDismissRequest = { opened = null },
         title = sheetTile?.let { stringResource(it.capability.label) },
     ) {
+        val example = sheetTile?.example?.let { stringResource(it) }
+        if (example != null) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = PvotSpacing.L),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    stringResource(R.string.home_capability_example, example),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = {
+                        opened = null
+                        onAsk(example)
+                    }
+                ) {
+                    Text(stringResource(R.string.home_capability_try))
+                }
+            }
+            Text(
+                stringResource(R.string.home_capability_apps_title),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S),
+            )
+        }
         sheetTile?.apps?.forEach { app ->
             Row(
                 Modifier.fillMaxWidth()
@@ -216,6 +244,15 @@ private fun CapabilityCard(tile: CapabilityTile, onClick: () -> Unit) {
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
+            tile.example?.let {
+                Text(
+                    stringResource(R.string.home_capability_example, stringResource(it)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 pluralStringResource(
                     R.plurals.home_capability_apps,

@@ -72,4 +72,26 @@ class HomeStateTest {
         assertEquals(2, state.supported)
         assertEquals(listOf("c1", "c2", "c3"), state.recent.map { it.id })
     }
+
+    @Test
+    fun capabilitiesVeyaCanAskForComeFirst() {
+        val notes =
+            AppProfile(
+                "org.prauga.notes",
+                "Notes",
+                AppKind.PRODUCTIVITY,
+                setOf(Capability.APP_SEARCH),
+            )
+        val music =
+            AppProfile("org.prauga.music", "Music", AppKind.AUDIO, setOf(Capability.PLAY_MEDIA))
+        val map = CapabilityMap(listOf(notes, music), emptyMap())
+        assertEquals(listOf(Capability.APP_SEARCH, Capability.PLAY_MEDIA), map.available)
+        val tiles = homeState(map, emptyList(), emptyMap(), emptyList()).capabilities
+        assertEquals(
+            listOf(Capability.PLAY_MEDIA, Capability.APP_SEARCH),
+            tiles.map { it.capability },
+        )
+        assertTrue(tiles.first().example != null)
+        assertEquals(null, tiles.last().example)
+    }
 }
