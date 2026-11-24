@@ -5,6 +5,7 @@ package org.prauga.assistant.platform.binder
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,11 +44,10 @@ class IntegrationGrants(context: Context) : ContextGrants, IntegrationAccess {
     fun set(packageName: String, grant: ContextGrant) {
         grants[packageName] = grant
         snapshot.value = HashMap(grants)
-        preferences
-            .edit()
-            .putBoolean(ENABLED_PREFIX + packageName, grant.enabled)
-            .putInt(CEILING_PREFIX + packageName, encode(grant.maxSensitivity))
-            .apply()
+        preferences.edit {
+            putBoolean(ENABLED_PREFIX + packageName, grant.enabled)
+            putInt(CEILING_PREFIX + packageName, encode(grant.maxSensitivity))
+        }
     }
 
     private fun load(packageName: String) {

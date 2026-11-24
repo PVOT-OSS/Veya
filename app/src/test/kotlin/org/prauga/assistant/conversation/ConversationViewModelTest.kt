@@ -38,6 +38,7 @@ import org.prauga.assistant.intent.Utterance
 class ConversationViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val store = FakeStore()
+    private var warmUps = 0
 
     @Before
     fun setUp() {
@@ -76,6 +77,7 @@ class ConversationViewModelTest {
             store,
             dispatcher,
             SavedStateHandle(),
+            { warmUps++ },
         )
     }
 
@@ -127,6 +129,12 @@ class ConversationViewModelTest {
             assertNull(vm.state.value.conversationId)
             assertTrue(vm.state.value.entries.isEmpty())
         }
+
+    @Test
+    fun opensAppConnectionsWhenTheScreenStarts() {
+        viewModel()
+        assertEquals(1, warmUps)
+    }
 
     @Test
     fun blankInputIsIgnored() =

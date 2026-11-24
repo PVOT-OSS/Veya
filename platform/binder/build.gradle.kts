@@ -16,6 +16,7 @@ dependencies {
     api(project(":context-engine"))
     implementation(project(":assistant-sdk"))
     implementation(libs.timber)
+    implementation(libs.androidx.core.ktx)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)

@@ -3,12 +3,27 @@
      SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <permission
+        android:name="org.prauga.assistant.permission.BIND_CONTEXT_PROVIDER"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="org.prauga.assistant.permission.BIND_CONTEXT_PROVIDER" />
+
+    <queries>
+        <intent>
+            <action android:name="org.prauga.assistant.sdk.action.PROVIDER" />
+        </intent>
+    </queries>
 
     <application>
+        <!-- Any app may call it, but only for its own package: callers are checked by Binder UID. -->
         <service
             android:name=".RegistryService"
-            android:exported="true">
+            android:exported="true"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="org.prauga.assistant.sdk.action.REGISTRY" />
             </intent-filter>

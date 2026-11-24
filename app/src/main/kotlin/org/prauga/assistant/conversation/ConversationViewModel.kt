@@ -29,6 +29,7 @@ import org.prauga.assistant.core.ConversationStore
 import org.prauga.assistant.core.IntentChoice
 import org.prauga.assistant.core.MessageKind
 import org.prauga.assistant.core.StoredMessage
+import org.prauga.assistant.platform.binder.ContextWarmUp
 
 @HiltViewModel
 class ConversationViewModel
@@ -38,10 +39,15 @@ constructor(
     private val store: ConversationStore,
     @param:IoDispatcher private val io: CoroutineDispatcher,
     private val savedState: SavedStateHandle,
+    private val contextWarmUp: ContextWarmUp,
 ) : ViewModel() {
     private val conversationId: StateFlow<String?> = savedState.getStateFlow(KEY_CONVERSATION, null)
     private val session = MutableStateFlow(Session())
     private var turn: Job? = null
+
+    init {
+        contextWarmUp.warmUp()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val state: StateFlow<ConversationUiState> =

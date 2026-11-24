@@ -9,6 +9,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.prauga.assistant.memory.DonatedContextStore
+import org.prauga.assistant.platform.binder.LiveProviders
+import org.prauga.assistant.platform.binder.PackageChanges
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -17,9 +19,15 @@ class VeyaApplication : Application() {
 
     @Inject @ApplicationScope lateinit var scope: CoroutineScope
 
+    @Inject lateinit var liveProviders: LiveProviders
+
+    @Inject lateinit var packageChanges: PackageChanges
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         scope.launch { donatedContext.start() }
+        liveProviders.start()
+        packageChanges.watch(liveProviders::refreshDirectory)
     }
 }
