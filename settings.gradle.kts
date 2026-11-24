@@ -41,4 +41,6 @@ include(":memory-engine")
 
 include(":platform:android")
 
+include(":inference:api")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }
