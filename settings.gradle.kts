@@ -47,4 +47,6 @@ include(":inference:litert")
 
 include(":context-engine")
 
+include(":benchmarks")
+
 providers.gradleProperty("pvotLibDir").orNull?.let { includeBuild(it) }
