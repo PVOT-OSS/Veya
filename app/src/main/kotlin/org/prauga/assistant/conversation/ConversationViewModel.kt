@@ -78,7 +78,13 @@ constructor(
             is ConversationEvent.Submit -> {
                 val text = event.text.trim()
                 if (text.isEmpty() || session.value.busy) return
-                run(assistant.submit(conversationId.value, text))
+                val pending = session.value.prompt as? ConversationPrompt.MissingDetail
+                val id = conversationId.value
+                if (pending != null && id != null) {
+                    run(assistant.answer(id, pending.choice, pending.parameter, text))
+                } else {
+                    run(assistant.submit(id, text))
+                }
             }
             is ConversationEvent.Choose -> chooseIn(event.choice)
             is ConversationEvent.PermissionResult ->
@@ -135,7 +141,11 @@ constructor(
                 session.update {
                     it.copy(
                         prompt =
-                            ConversationPrompt.MissingDetail(event.choice, event.parameter.name)
+                            ConversationPrompt.MissingDetail(
+                                event.choice,
+                                event.parameter.name,
+                                event.parameter.question,
+                            )
                     )
                 }
         }

@@ -27,7 +27,7 @@ class EventCommand(
         lexicon,
         ID,
         R.string.command_event,
-        subjectRequired = true,
+        question = R.string.command_event_question,
     ) {
     private val times = Times(lexicon)
 

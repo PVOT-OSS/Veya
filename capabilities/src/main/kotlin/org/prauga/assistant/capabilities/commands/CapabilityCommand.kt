@@ -29,7 +29,7 @@ abstract class CapabilityCommand(
     lexicon: Lexicon,
     id: String,
     @StringRes name: Int,
-    subjectRequired: Boolean = false,
+    @StringRes question: Int? = null,
 ) : IntentHandler {
     sealed interface Plan
 
@@ -44,8 +44,11 @@ abstract class CapabilityCommand(
             id,
             context.getString(name),
             parameters =
-                if (subjectRequired) listOf(IntentParameter(SUBJECT, required = true))
-                else emptyList(),
+                question
+                    ?.let {
+                        listOf(IntentParameter(SUBJECT, required = true, context.getString(it)))
+                    }
+                    .orEmpty(),
         )
 
     private val matcher = PatternMatcher.from(id, lexicon.phrases(id))

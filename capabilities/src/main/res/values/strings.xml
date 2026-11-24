@@ -93,6 +93,14 @@
     <string name="command_text">Text a number</string>
     <string name="command_text_done">Opening %2$s with a text to %1$s ready to send.</string>
     <string name="command_number_unclear">That doesn\'t look like a phone number.</string>
+    <string name="command_timer_question">How long should the timer run?</string>
+    <string name="command_alarm_question">What time should the alarm go off?</string>
+    <string name="command_map_question">Which place?</string>
+    <string name="command_web_question">What should I search the web for?</string>
+    <string name="command_play_question">What should I play?</string>
+    <string name="command_link_question">Which web address?</string>
+    <string name="command_event_question">What is the event, and when?</string>
+    <string name="command_call_question">Which number should I call?</string>
 
     <!-- Example requests shown on the home screen; each must be understood by the lexicon. -->
     <string name="capability_map_example">Directions to the nearest pharmacy</string>

@@ -150,4 +150,25 @@ class AssistantTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun rejectsBlankInput() = runTest { assistant().submit(null, "   ").toList() }
+
+    @Test
+    fun theNextMessageAnswersAMissingDetail() = runTest {
+        val timer =
+            handler(
+                "timer",
+                "set a timer( for (?<length>.+))?",
+                parameters = listOf(IntentParameter("length", required = true, "How long?")),
+            ) {
+                IntentOutcome.Reply("timer ${it.entities["length"]}")
+            }
+        val assistant = assistant(timer, handler("battery", "battery"))
+        val asked = assistant.submit(null, "set a timer").toList()
+        val id = (asked[0] as AssistantEvent.TurnStarted).conversationId
+        val missing = asked[1] as AssistantEvent.MissingDetail
+        assertEquals("How long?", missing.parameter.question)
+        val answered = assistant.answer(id, missing.choice, "length", "10 minutes").toList()
+        assertEquals("timer 10 minutes", (answered[1] as AssistantEvent.Reply).text)
+        val changedMind = assistant.answer(id, missing.choice, "length", "battery").toList()
+        assertEquals("battery ok", (changedMind[1] as AssistantEvent.Reply).text)
+    }
 }

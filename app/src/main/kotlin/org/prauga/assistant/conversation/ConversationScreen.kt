@@ -270,11 +270,8 @@ private fun PromptCard(prompt: ConversationPrompt, onEvent: (ConversationEvent) 
                 }
                 is ConversationPrompt.MissingDetail ->
                     Text(
-                        stringResource(
-                            R.string.missing_detail,
-                            prompt.choice.displayName,
-                            prompt.parameter,
-                        )
+                        prompt.question
+                            ?: stringResource(R.string.missing_detail, prompt.choice.displayName)
                     )
                 is ConversationPrompt.Permission ->
                     PermissionPrompt(prompt.choice, prompt.permissions, onEvent)

@@ -26,7 +26,7 @@ class TimerCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         lexicon,
         ID,
         R.string.command_timer,
-        subjectRequired = true,
+        question = R.string.command_timer_question,
     ) {
     private val durations = Durations(lexicon)
 
@@ -83,7 +83,7 @@ class AlarmCommand(
         lexicon,
         ID,
         R.string.command_alarm,
-        subjectRequired = true,
+        question = R.string.command_alarm_question,
     ) {
     private val times = Times(lexicon)
 

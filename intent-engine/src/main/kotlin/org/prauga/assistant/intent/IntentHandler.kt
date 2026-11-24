@@ -22,7 +22,8 @@ data class IntentDescriptor(
     fun supports(sdkInt: Int): Boolean = sdkInt >= minSdk && (maxSdk == null || sdkInt <= maxSdk)
 }
 
-data class IntentParameter(val name: String, val required: Boolean)
+/** A detail an intent needs; [question] is what to ask the user when it is missing. */
+data class IntentParameter(val name: String, val required: Boolean, val question: String? = null)
 
 data class IntentMatch(
     val intentId: String,

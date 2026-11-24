@@ -6,6 +6,7 @@
 <resources>
     <string name="intent_search_context">Search your apps</string>
     <string name="intent_app_data">Look up something in your apps</string>
+    <string name="search_question">What should I look for?</string>
     <string name="context_nothing_enabled">No apps are sharing with Veya yet. Turn them on in Integrations.</string>
     <string name="context_unreachable">The apps you turned on aren\'t answering right now. Try again in a moment.</string>
     <string name="context_nothing_found">I didn\'t find anything for “%1$s”.</string>

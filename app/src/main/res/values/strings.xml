@@ -27,7 +27,7 @@
 
     <string name="unanswered">I can only handle device commands so far. Open questions need an on-device language model, which Veya doesn\'t have yet.</string>
     <string name="clarify_title">Which did you mean?</string>
-    <string name="missing_detail">“%1$s” needs one more detail: the %2$s.</string>
+    <string name="missing_detail">“%1$s” needs one more detail. Ask again with it included.</string>
     <string name="permission_title">“%1$s” needs your permission</string>
     <string name="permission_body">Veya asks only when a command needs it.</string>
     <string name="permission_allow">Allow</string>

@@ -31,7 +31,11 @@ sealed interface ConversationPrompt {
 
     data class Clarify(val choices: List<IntentChoice>) : ConversationPrompt
 
-    data class MissingDetail(val choice: IntentChoice, val parameter: String) : ConversationPrompt
+    data class MissingDetail(
+        val choice: IntentChoice,
+        val parameter: String,
+        val question: String?,
+    ) : ConversationPrompt
 
     data object PermissionDenied : ConversationPrompt
 }

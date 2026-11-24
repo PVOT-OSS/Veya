@@ -12,7 +12,14 @@ import org.prauga.assistant.understanding.Lexicon
 
 /** Opens the dialer with a number ready; the user presses call. */
 class CallCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_call, subjectRequired = true) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_call,
+        question = R.string.command_call_question,
+    ) {
     override val unclear = R.string.command_number_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {

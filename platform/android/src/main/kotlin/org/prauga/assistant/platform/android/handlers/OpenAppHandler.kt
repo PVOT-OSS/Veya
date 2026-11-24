@@ -27,7 +27,10 @@ class OpenAppHandler(
         IntentDescriptor(
             ID,
             context.getString(R.string.intent_open_app),
-            parameters = listOf(IntentParameter(APP, required = true)),
+            parameters =
+                listOf(
+                    IntentParameter(APP, required = true, context.getString(R.string.app_question))
+                ),
         )
 
     private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))

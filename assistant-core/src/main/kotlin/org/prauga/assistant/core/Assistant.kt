@@ -27,6 +27,28 @@ class Assistant(
         respond(id, engine.resolve(trimmed), started)
     }
 
+    /**
+     * The user's reply to a missing-detail question: fills [parameter] of [choice] with [text],
+     * unless [text] is a request of its own, which then wins.
+     */
+    fun answer(
+        conversationId: String,
+        choice: IntentChoice,
+        parameter: String,
+        text: String,
+    ): Flow<AssistantEvent> = flow {
+        val trimmed = text.trim()
+        require(trimmed.isNotEmpty()) { "Nothing to answer" }
+        val started = nanoTime()
+        emit(AssistantEvent.TurnStarted(conversationId))
+        store.append(conversationId, StoredMessage(MessageKind.USER, trimmed, clock()))
+        val fresh = engine.resolve(trimmed)
+        val resolution =
+            if (fresh != Resolution.NoMatch) fresh
+            else engine.resolve(choice.intentId, choice.entities + (parameter to trimmed))
+        respond(conversationId, resolution, started)
+    }
+
     fun choose(conversationId: String, choice: IntentChoice): Flow<AssistantEvent> = flow {
         val started = nanoTime()
         emit(AssistantEvent.TurnStarted(conversationId))

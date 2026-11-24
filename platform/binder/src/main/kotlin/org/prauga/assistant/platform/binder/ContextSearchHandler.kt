@@ -23,7 +23,14 @@ internal class ContextSearchHandler(
         IntentDescriptor(
             ID,
             context.getString(R.string.intent_search_context),
-            parameters = listOf(IntentParameter(QUERY, required = true)),
+            parameters =
+                listOf(
+                    IntentParameter(
+                        QUERY,
+                        required = true,
+                        context.getString(R.string.search_question),
+                    )
+                ),
         )
 
     private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))

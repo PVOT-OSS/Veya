@@ -13,7 +13,14 @@ import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Lexicon
 
 class MapCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_map, subjectRequired = true) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_map,
+        question = R.string.command_map_question,
+    ) {
     override val unclear = R.string.command_map_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {
@@ -28,7 +35,14 @@ class MapCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
 }
 
 class WebSearchCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_web, subjectRequired = true) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_web,
+        question = R.string.command_web_question,
+    ) {
     override val unclear = R.string.command_web_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {
@@ -43,7 +57,14 @@ class WebSearchCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
 }
 
 class PlayCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_play, subjectRequired = true) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_play,
+        question = R.string.command_play_question,
+    ) {
     override val unclear = R.string.command_play_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {
@@ -62,7 +83,14 @@ class PlayCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
 }
 
 class LinkCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_link, subjectRequired = true) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_link,
+        question = R.string.command_link_question,
+    ) {
     override val unclear = R.string.command_link_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {
