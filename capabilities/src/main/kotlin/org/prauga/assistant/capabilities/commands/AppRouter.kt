@@ -9,10 +9,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.platform.android.handlers.LaunchableApp
 
 /** Finds which installed apps can take an intent and starts the right one. */
-class AppRouter(private val context: Context) {
+class AppRouter(
+    private val context: Context,
+    private val preferred: (Capability) -> String? = { null },
+) {
     sealed interface Opened {
         data class App(val label: String) : Opened
 
@@ -32,10 +36,22 @@ class AppRouter(private val context: Context) {
             }
     }
 
-    /** Opens [named] if given, else the only or default app, else the system chooser. */
-    fun open(intent: Intent, apps: List<LaunchableApp>, named: LaunchableApp?): Opened {
+    /**
+     * Opens [named] if given, else the app the user prefers for [capability], else the only or
+     * default app, else the system chooser.
+     */
+    fun open(
+        intent: Intent,
+        apps: List<LaunchableApp>,
+        named: LaunchableApp?,
+        capability: Capability? = null,
+    ): Opened {
         if (apps.isEmpty()) return Opened.Nothing
-        val target = named ?: apps.singleOrNull() ?: defaultOf(intent, apps)
+        val chosen =
+            capability?.let(preferred)?.let { wanted ->
+                apps.firstOrNull { it.packageName == wanted }
+            }
+        val target = named ?: chosen ?: apps.singleOrNull() ?: defaultOf(intent, apps)
         return try {
             if (target != null) {
                 context.startActivity(

@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.prauga.assistant.capabilities.CapabilityRepository
 import org.prauga.assistant.capabilities.CapabilityScanner
+import org.prauga.assistant.capabilities.PreferredApps
 import org.prauga.assistant.capabilities.commands.CapabilityCommands
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.core.Assistant
@@ -53,6 +54,7 @@ object AssistantModule {
     @Singleton
     fun languageEngines(
         @ApplicationContext context: Context,
+        preferred: PreferredApps,
         contextEngine: ContextEngine,
         live: LiveProviders,
         vocabulary: VocabularyStore,
@@ -66,7 +68,7 @@ object AssistantModule {
         ) { lexicon ->
             IntentEngine(
                 DeviceHandlers.create(context, lexicon) +
-                    CapabilityCommands.create(context, lexicon) +
+                    CapabilityCommands.create(context, lexicon, preferred = preferred::of) +
                     ContextHandlers.create(
                         context,
                         lexicon,
@@ -92,6 +94,10 @@ object AssistantModule {
     @ApplicationScope
     fun applicationScope(@IoDispatcher io: CoroutineDispatcher): CoroutineScope =
         CoroutineScope(SupervisorJob() + io)
+
+    @Provides
+    @Singleton
+    fun preferredApps(@ApplicationContext context: Context): PreferredApps = PreferredApps(context)
 
     @Provides
     @Singleton

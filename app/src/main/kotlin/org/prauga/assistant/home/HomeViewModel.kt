@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import org.prauga.assistant.IoDispatcher
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.CapabilityRepository
+import org.prauga.assistant.capabilities.PreferredApps
 import org.prauga.assistant.core.ConversationStore
 import org.prauga.assistant.platform.binder.IntegrationGrants
 import org.prauga.assistant.platform.binder.LiveProviders
@@ -24,6 +26,7 @@ class HomeViewModel
 @Inject
 constructor(
     capabilities: CapabilityRepository,
+    private val preferredApps: PreferredApps,
     live: LiveProviders,
     grants: IntegrationGrants,
     store: ConversationStore,
@@ -35,6 +38,7 @@ constructor(
                 live.available,
                 grants.all,
                 store.conversations().flowOn(io),
+                preferredApps.all,
                 ::homeState,
             )
             .stateIn(
@@ -42,6 +46,14 @@ constructor(
                 SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
                 HomeUiState(),
             )
+
+    /**
+     * Makes [app] the one Veya uses for [capability]; choosing it again goes back to the default.
+     */
+    fun choose(capability: Capability, app: AppChoice) {
+        val current = preferredApps.of(capability)
+        preferredApps.set(capability, app.packageName.takeIf { it != current })
+    }
 
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L

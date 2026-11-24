@@ -8,6 +8,7 @@ import android.content.Intent
 import android.provider.CalendarContract
 import android.text.format.DateUtils
 import java.time.ZonedDateTime
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Lexicon
@@ -28,6 +29,7 @@ class EventCommand(
         ID,
         R.string.command_event,
         question = R.string.command_event_question,
+        capability = Capability.ADD_EVENT,
     ) {
     private val times = Times(lexicon)
 

@@ -6,6 +6,7 @@ package org.prauga.assistant.capabilities.commands
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Lexicon
@@ -19,6 +20,7 @@ class CallCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_call,
         question = R.string.command_call_question,
+        capability = Capability.DIAL,
     ) {
     override val unclear = R.string.command_number_unclear
 
@@ -36,7 +38,14 @@ class CallCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
 
 /** Opens a messaging app with the number and, if given, the message ready; the user sends. */
 class TextCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_text) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_text,
+        capability = Capability.TEXT,
+    ) {
     override val unclear = R.string.command_number_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? {

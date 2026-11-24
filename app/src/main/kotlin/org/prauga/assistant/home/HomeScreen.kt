@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -162,25 +164,46 @@ fun HomeScreen(
             )
         }
         sheetTile?.apps?.forEach { app ->
+            val chosen = app == sheetTile.preferred
             Row(
                 Modifier.fillMaxWidth()
                     .heightIn(min = ROW_MIN_HEIGHT)
+                    .selectable(
+                        selected = chosen,
+                        role = Role.RadioButton,
+                        onClick = { viewModel.choose(sheetTile.capability, app) },
+                    )
                     .padding(horizontal = PvotSpacing.L),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    app,
+                    app.label,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                 )
-                if (app == sheetTile.defaultApp) {
+                val note =
+                    when {
+                        chosen -> R.string.home_capability_sheet_chosen
+                        sheetTile.preferred == null && app.label == sheetTile.defaultApp ->
+                            R.string.home_capability_sheet_default
+                        else -> null
+                    }
+                note?.let {
                     Text(
-                        stringResource(R.string.home_capability_sheet_default),
+                        stringResource(it),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
+        }
+        if (sheetTile != null && sheetTile.apps.size > 1) {
+            Text(
+                stringResource(R.string.home_capability_sheet_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S),
+            )
         }
         Spacer(Modifier.size(PvotSpacing.L))
     }
@@ -263,7 +286,8 @@ private fun CapabilityCard(tile: CapabilityTile, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                tile.defaultApp?.let { stringResource(R.string.home_capability_default, it) }
+                tile.preferred?.let { stringResource(R.string.home_capability_chosen, it.label) }
+                    ?: tile.defaultApp?.let { stringResource(R.string.home_capability_default, it) }
                     ?: stringResource(R.string.home_capability_choose),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

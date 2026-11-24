@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.MediaStore
 import androidx.annotation.StringRes
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Lexicon
@@ -14,30 +15,34 @@ import org.prauga.assistant.understanding.Lexicon
 /** Opens an app ready to take a photo, record a video or record sound; it saves as usual. */
 class CaptureCommand
 private constructor(context: Context, router: AppRouter, lexicon: Lexicon, private val kind: Kind) :
-    CapabilityCommand(context, router, lexicon, kind.id, kind.label) {
+    CapabilityCommand(context, router, lexicon, kind.id, kind.label, capability = kind.capability) {
     enum class Kind(
         val id: String,
         val action: String,
         @StringRes val label: Int,
         @StringRes val done: Int,
+        val capability: Capability,
     ) {
         PHOTO(
             "command.photo",
             MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA,
             R.string.command_photo,
             R.string.command_photo_done,
+            Capability.TAKE_PHOTO,
         ),
         VIDEO(
             "command.video",
             MediaStore.INTENT_ACTION_VIDEO_CAMERA,
             R.string.command_video,
             R.string.command_video_done,
+            Capability.RECORD_VIDEO,
         ),
         AUDIO(
             "command.audio",
             MediaStore.Audio.Media.RECORD_SOUND_ACTION,
             R.string.command_audio,
             R.string.command_audio_done,
+            Capability.RECORD_AUDIO,
         ),
     }
 

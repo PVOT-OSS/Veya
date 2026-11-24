@@ -13,6 +13,7 @@ import android.text.format.DateFormat
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.Date
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Durations
@@ -27,6 +28,7 @@ class TimerCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_timer,
         question = R.string.command_timer_question,
+        capability = Capability.SET_TIMER,
     ) {
     private val durations = Durations(lexicon)
 
@@ -84,6 +86,7 @@ class AlarmCommand(
         ID,
         R.string.command_alarm,
         question = R.string.command_alarm_question,
+        capability = Capability.SET_ALARM,
     ) {
     private val times = Times(lexicon)
 
@@ -109,7 +112,14 @@ class AlarmCommand(
 }
 
 class ShowAlarmsCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
-    CapabilityCommand(context, router, lexicon, ID, R.string.command_alarms) {
+    CapabilityCommand(
+        context,
+        router,
+        lexicon,
+        ID,
+        R.string.command_alarms,
+        capability = Capability.SHOW_ALARMS,
+    ) {
     override val unclear = R.string.command_alarms_unclear
 
     override fun request(subject: String?, match: IntentMatch): Plan? =

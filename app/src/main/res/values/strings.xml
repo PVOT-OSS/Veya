@@ -47,6 +47,9 @@
         <item quantity="other">%d apps</item>
     </plurals>
     <string name="home_capability_sheet_default">Default</string>
+    <string name="home_capability_sheet_chosen">Veya uses this</string>
+    <string name="home_capability_chosen">Veya uses: %1$s</string>
+    <string name="home_capability_sheet_hint">Tap an app for Veya to use it. Tap it again to go back to the phone\'s default.</string>
     <string name="home_capability_example">“%1$s”</string>
     <string name="home_capability_try">Try it</string>
     <string name="home_capability_apps_title">Apps that can do this</string>

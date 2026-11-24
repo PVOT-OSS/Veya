@@ -7,6 +7,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentDescriptor
 import org.prauga.assistant.intent.IntentHandler
@@ -81,7 +82,10 @@ private constructor(
                 Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", person.number, null))
             }
         val apps = router.appsFor(intent)
-        return when (val opened = router.open(intent, apps, null)) {
+        return when (
+            val opened =
+                router.open(intent, apps, null, if (text) Capability.TEXT else Capability.DIAL)
+        ) {
             is AppRouter.Opened.App ->
                 IntentOutcome.Reply(
                     context.getString(

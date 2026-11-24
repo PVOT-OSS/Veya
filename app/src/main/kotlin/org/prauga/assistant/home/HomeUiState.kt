@@ -21,27 +21,34 @@ data class HomeUiState(
 
 data class CapabilityTile(
     val capability: Capability,
-    val apps: List<String>,
+    val apps: List<AppChoice>,
     val defaultApp: String?,
     @StringRes val example: Int?,
+    /** The app the user chose for Veya to use, when it is still installed. */
+    val preferred: AppChoice? = null,
 )
+
+data class AppChoice(val label: String, val packageName: String)
 
 internal fun homeState(
     map: CapabilityMap,
     supported: List<ProviderComponent>,
     grants: Map<String, ContextGrant>,
     recent: List<ConversationSummary>,
+    preferred: Map<Capability, String> = emptyMap(),
 ): HomeUiState =
     HomeUiState(
         scanning = map === CapabilityMap.Empty,
         capabilities =
             map.available
                 .map { capability ->
+                    val apps = map.appsFor(capability).map { AppChoice(it.label, it.packageName) }
                     CapabilityTile(
                         capability,
-                        map.appsFor(capability).map { it.label },
+                        apps,
                         map.defaultFor(capability)?.label,
                         capability.example,
+                        apps.firstOrNull { it.packageName == preferred[capability] },
                     )
                 }
                 .sortedBy { it.example == null },

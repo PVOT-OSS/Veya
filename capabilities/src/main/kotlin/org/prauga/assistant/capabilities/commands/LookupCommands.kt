@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.understanding.Lexicon
@@ -20,6 +21,7 @@ class MapCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_map,
         question = R.string.command_map_question,
+        capability = Capability.MAP,
     ) {
     override val unclear = R.string.command_map_unclear
 
@@ -42,6 +44,7 @@ class WebSearchCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_web,
         question = R.string.command_web_question,
+        capability = Capability.WEB_SEARCH,
     ) {
     override val unclear = R.string.command_web_unclear
 
@@ -64,6 +67,7 @@ class PlayCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_play,
         question = R.string.command_play_question,
+        capability = Capability.PLAY_MEDIA,
     ) {
     override val unclear = R.string.command_play_unclear
 
@@ -90,6 +94,7 @@ class LinkCommand(context: Context, router: AppRouter, lexicon: Lexicon) :
         ID,
         R.string.command_link,
         question = R.string.command_link_question,
+        capability = Capability.BROWSE,
     ) {
     override val unclear = R.string.command_link_unclear
 

@@ -326,4 +326,25 @@ class CapabilityCommandsTest {
         assertTrue(denied.resolve("call Sam Lee") is Resolution.NeedsPermission)
         assertTrue(denied.resolve("call 555 0100") is Resolution.Matched)
     }
+
+    @Test
+    fun thePreferredAppWinsOverTheDefaultButNotOverANamedOne() {
+        app("app.organicmaps", "Organic Maps", filter(Intent.ACTION_VIEW, scheme = "geo"))
+        app("net.osmand", "OsmAnd", filter(Intent.ACTION_VIEW, scheme = "geo"))
+        val preferring =
+            IntentEngine(
+                CapabilityCommands.create(context, lexicon, { now }, contacts) {
+                    if (it == Capability.MAP) "net.osmand" else null
+                },
+                gate,
+                Utterance.Fillers.of(lexicon),
+            )
+        fun open(text: String): String? {
+            val candidate = (preferring.resolve(text) as Resolution.Matched).candidate
+            runBlocking { candidate.handler.execute(candidate.match) }
+            return started().`package`
+        }
+        assertEquals("net.osmand", open("directions to the station"))
+        assertEquals("app.organicmaps", open("directions to the station in organic maps"))
+    }
 }

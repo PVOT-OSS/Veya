@@ -5,6 +5,7 @@ package org.prauga.assistant.capabilities.commands
 
 import android.content.Context
 import java.time.ZonedDateTime
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.understanding.Lexicon
 
@@ -14,8 +15,9 @@ object CapabilityCommands {
         lexicon: Lexicon,
         now: () -> ZonedDateTime = ZonedDateTime::now,
         contacts: ContactDirectory = AndroidContacts(context),
+        preferred: (Capability) -> String? = { null },
     ): List<IntentHandler> {
-        val router = AppRouter(context)
+        val router = AppRouter(context, preferred)
         return listOf(
             TimerCommand(context, router, lexicon),
             AlarmCommand(context, router, lexicon, now),

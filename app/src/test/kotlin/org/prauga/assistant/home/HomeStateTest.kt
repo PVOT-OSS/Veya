@@ -49,7 +49,7 @@ class HomeStateTest {
             listOf(Capability.MAP, Capability.SET_ALARM, Capability.SET_TIMER),
             tiles.map { it.capability },
         )
-        assertEquals(listOf("Organic Maps", "OsmAnd"), tiles.first().apps)
+        assertEquals(listOf("Organic Maps", "OsmAnd"), tiles.first().apps.map { it.label })
         assertEquals(null, tiles.first().defaultApp)
         assertEquals("Clock", tiles[1].defaultApp)
     }
@@ -93,5 +93,28 @@ class HomeStateTest {
         )
         assertTrue(tiles.first().example != null)
         assertEquals(null, tiles.last().example)
+    }
+
+    @Test
+    fun showsTheAppTheUserChoseWhileItIsInstalled() {
+        val map = CapabilityMap(listOf(maps, osm), emptyMap())
+        val chosen =
+            homeState(
+                map,
+                emptyList(),
+                emptyMap(),
+                emptyList(),
+                mapOf(Capability.MAP to "net.osmand"),
+            )
+        assertEquals("OsmAnd", chosen.capabilities.first().preferred?.label)
+        val gone =
+            homeState(
+                map,
+                emptyList(),
+                emptyMap(),
+                emptyList(),
+                mapOf(Capability.MAP to "gone.app"),
+            )
+        assertEquals(null, gone.capabilities.first().preferred)
     }
 }

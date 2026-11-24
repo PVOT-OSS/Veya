@@ -6,6 +6,7 @@ package org.prauga.assistant.capabilities.commands
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.StringRes
+import org.prauga.assistant.capabilities.Capability
 import org.prauga.assistant.capabilities.R
 import org.prauga.assistant.intent.IntentDescriptor
 import org.prauga.assistant.intent.IntentHandler
@@ -30,6 +31,7 @@ abstract class CapabilityCommand(
     id: String,
     @StringRes name: Int,
     @StringRes question: Int? = null,
+    private val capability: Capability? = null,
 ) : IntentHandler {
     sealed interface Plan
 
@@ -88,7 +90,7 @@ abstract class CapabilityCommand(
             val named =
                 if (appName == null) null
                 else AppMatcher.best(appName, apps, wholeWords = true) ?: continue
-            return when (val opened = router.open(request.intent, apps, named)) {
+            return when (val opened = router.open(request.intent, apps, named, capability)) {
                 is AppRouter.Opened.App -> IntentOutcome.Reply(request.done(opened.label))
                 AppRouter.Opened.Chooser ->
                     IntentOutcome.Reply(context.getString(R.string.command_choose))
