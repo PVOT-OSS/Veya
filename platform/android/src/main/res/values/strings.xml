@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<resources>
+    <string name="intent_battery">Battery level</string>
+    <string name="intent_torch_on">Turn on the flashlight</string>
+    <string name="intent_torch_off">Turn off the flashlight</string>
+    <string name="intent_open_app">Open an app</string>
+    <string name="intent_open_settings">Open settings</string>
+    <string name="intent_time">Current time</string>
+    <string name="intent_date">Today\'s date</string>
+    <string name="intent_device_info">Device information</string>
+
+    <string name="battery_level">Battery is at %1$d%%.</string>
+    <string name="battery_level_charging">Battery is at %1$d%% and charging.</string>
+    <string name="battery_level_full">Battery is full.</string>
+    <string name="battery_unknown">I couldn\'t read the battery level.</string>
+    <string name="torch_on">Flashlight is on.</string>
+    <string name="torch_off">Flashlight is off.</string>
+    <string name="torch_unavailable">This device has no flashlight I can use.</string>
+    <string name="torch_busy">The flashlight is in use by another app.</string>
+    <string name="app_opening">Opening %1$s.</string>
+    <string name="app_not_found">I couldn\'t find an app called “%1$s”.</string>
+    <string name="settings_opening">Opening %1$s.</string>
+    <string name="settings_unavailable">This device doesn\'t have that settings page.</string>
+    <string name="time_now">It\'s %1$s.</string>
+    <string name="date_today">Today is %1$s.</string>
+    <string name="device_info">%1$s %2$s, Android %3$s (API %4$d).</string>
+
+    <string name="settings_page_main">Settings</string>
+    <string name="settings_page_wifi">Wi‑Fi settings</string>
+    <string name="settings_page_bluetooth">Bluetooth settings</string>
+    <string name="settings_page_display">Display settings</string>
+    <string name="settings_page_sound">Sound settings</string>
+    <string name="settings_page_battery">Battery settings</string>
+    <string name="settings_page_location">Location settings</string>
+    <string name="settings_page_notifications">Notification settings</string>
+    <string name="settings_page_apps">App settings</string>
+    <string name="settings_page_storage">Storage settings</string>
+    <string name="settings_page_security">Security settings</string>
+    <string name="settings_page_accessibility">Accessibility settings</string>
+    <string name="settings_page_date">Date and time settings</string>
+    <string name="settings_page_language">Language settings</string>
+    <string name="settings_page_network">Network settings</string>
+    <string name="settings_page_airplane">Airplane mode settings</string>
+</resources>

@@ -1,0 +1,62 @@
+// SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+package org.prauga.assistant.platform.android.handlers
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import org.prauga.assistant.intent.IntentDescriptor
+import org.prauga.assistant.intent.IntentHandler
+import org.prauga.assistant.intent.IntentMatch
+import org.prauga.assistant.intent.IntentOutcome
+import org.prauga.assistant.intent.IntentParameter
+import org.prauga.assistant.intent.PatternMatcher
+import org.prauga.assistant.intent.PatternMatcher.Companion.rule
+import org.prauga.assistant.intent.Utterance
+import org.prauga.assistant.platform.android.ActivityLauncher
+import org.prauga.assistant.platform.android.R
+
+class OpenAppHandler(private val context: Context, private val launcher: ActivityLauncher) :
+    IntentHandler {
+    override val descriptor =
+        IntentDescriptor(
+            ID,
+            context.getString(R.string.intent_open_app),
+            parameters = listOf(IntentParameter(APP, required = true)),
+        )
+
+    private val matcher =
+        PatternMatcher(
+            ID,
+            listOf(rule("(open|launch|start|run)( the)?( (?<app>.+?))?( app)?", 0.8f, APP)),
+        )
+
+    override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
+
+    override suspend fun execute(match: IntentMatch): IntentOutcome {
+        val query = match.entities[APP].orEmpty()
+        val app = AppMatcher.best(query, launchableApps())
+        val intent = app?.let { context.packageManager.getLaunchIntentForPackage(it.packageName) }
+        if (app == null || intent == null || !launcher.launch(intent)) {
+            return IntentOutcome.Failed(context.getString(R.string.app_not_found, query))
+        }
+        return IntentOutcome.Reply(context.getString(R.string.app_opening, app.label))
+    }
+
+    private fun launchableApps(): List<LaunchableApp> {
+        val packageManager = context.packageManager
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        return packageManager
+            .queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(0))
+            .map {
+                LaunchableApp(it.loadLabel(packageManager).toString(), it.activityInfo.packageName)
+            }
+            .filter { it.packageName != context.packageName }
+    }
+
+    companion object {
+        const val ID = "app.open"
+        const val APP = "app"
+    }
+}
