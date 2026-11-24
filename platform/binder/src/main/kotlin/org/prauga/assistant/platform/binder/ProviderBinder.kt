@@ -19,6 +19,7 @@ fun interface ProviderBinder {
         component: ProviderComponent,
         onConnected: (IContextProvider) -> Unit,
         onDisconnected: () -> Unit,
+        onDied: () -> Unit,
     ): ProviderBinding?
 }
 
@@ -27,6 +28,7 @@ class ContextProviderBinder(private val context: Context) : ProviderBinder {
         component: ProviderComponent,
         onConnected: (IContextProvider) -> Unit,
         onDisconnected: () -> Unit,
+        onDied: () -> Unit,
     ): ProviderBinding? {
         val connection =
             object : ServiceConnection {
@@ -39,11 +41,11 @@ class ContextProviderBinder(private val context: Context) : ProviderBinder {
                 }
 
                 override fun onBindingDied(name: ComponentName?) {
-                    onDisconnected()
+                    onDied()
                 }
 
                 override fun onNullBinding(name: ComponentName?) {
-                    onDisconnected()
+                    onDied()
                 }
             }
         val intent = Intent().setClassName(component.packageName, component.className)

@@ -9,7 +9,6 @@ import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.context.ContextItem
 import org.prauga.assistant.context.ContextQuery
 import org.prauga.assistant.context.ContextResult
-import org.prauga.assistant.context.SkipReason
 import org.prauga.assistant.intent.IntentDescriptor
 import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
@@ -23,6 +22,7 @@ class ContextSearchHandler
 private constructor(
     private val context: Context,
     private val engine: ContextEngine,
+    private val readiness: ContextReadiness,
     private val kind: Kind,
 ) : IntentHandler {
     enum class Kind(val id: String, @StringRes val label: Int) {
@@ -100,9 +100,13 @@ private constructor(
                         limit = LIMIT,
                     )
             }
-        val result = engine.query(query)
-        if (nothingEnabled(result))
+        if (!readiness.anyEnabled() && engine.providers.value.isEmpty()) {
             return IntentOutcome.Reply(context.getString(R.string.context_nothing_enabled))
+        }
+        readiness.ensureConnected(CONNECT_TIMEOUT_MILLIS)
+        val result = engine.query(query)
+        if (unreachable(result))
+            return IntentOutcome.Reply(context.getString(R.string.context_unreachable))
         val app = match.entities[APP]
         val items =
             result.items
@@ -117,11 +121,8 @@ private constructor(
         return IntentOutcome.Reply(format(items))
     }
 
-    private fun nothingEnabled(result: ContextResult): Boolean {
-        val registered = engine.providers.value.size
-        return registered == 0 ||
-            result.skipped.count { it.reason == SkipReason.NOT_GRANTED } == registered
-    }
+    private fun unreachable(result: ContextResult): Boolean =
+        result.items.isEmpty() && engine.providers.value.isEmpty() && readiness.anyEnabled()
 
     private fun format(items: List<ContextItem>): String = buildString {
         append(context.getString(R.string.context_results_header))
@@ -154,8 +155,13 @@ private constructor(
         private const val MESSAGE = "message"
         private const val UNREAD = "unread"
         private const val LIMIT = 5
+        private const val CONNECT_TIMEOUT_MILLIS = 300L
 
-        fun all(context: Context, engine: ContextEngine): List<IntentHandler> =
-            Kind.entries.map { ContextSearchHandler(context, engine, it) }
+        fun all(
+            context: Context,
+            engine: ContextEngine,
+            readiness: ContextReadiness,
+        ): List<IntentHandler> =
+            Kind.entries.map { ContextSearchHandler(context, engine, readiness, it) }
     }
 }

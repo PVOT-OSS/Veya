@@ -30,13 +30,20 @@ import org.robolectric.annotation.Config
 class ContextSearchHandlerTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private var granted = true
+    private var enabled = true
+    private val readiness =
+        object : ContextReadiness {
+            override fun anyEnabled() = enabled
+
+            override suspend fun ensureConnected(timeoutMillis: Long) = Unit
+        }
     private val engine =
         ContextEngine({
             if (granted) ContextGrant(true, Sensitivity.SENSITIVE) else ContextGrant.Denied
         })
     private val intents =
         IntentEngine(
-            ContextSearchHandler.all(context, engine),
+            ContextSearchHandler.all(context, engine, readiness),
             object : PlatformGate {
                 override val sdkInt = 35
 
@@ -138,17 +145,16 @@ class ContextSearchHandlerTest {
 
     @Test
     fun saysWhenNothingIsShared() {
+        enabled = false
         assertEquals(
             context.getString(R.string.context_nothing_enabled),
             reply("any unread messages"),
         )
-        register(conversation("1", "Sam", unread = true))
-        granted = false
-        engine.invalidate("live:org.prauga.messages")
-        assertEquals(
-            context.getString(R.string.context_nothing_enabled),
-            reply("any unread messages"),
-        )
+    }
+
+    @Test
+    fun saysWhenAnEnabledAppIsNotAnswering() {
+        assertEquals(context.getString(R.string.context_unreachable), reply("any unread messages"))
     }
 
     @Test

@@ -11,9 +11,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.context.ContextProviderDescriptor
 import org.prauga.assistant.sdk.protocol.IContextProvider
@@ -21,6 +24,12 @@ import timber.log.Timber
 
 fun interface ContextWarmUp {
     fun warmUp()
+}
+
+interface ContextReadiness {
+    fun anyEnabled(): Boolean
+
+    suspend fun ensureConnected(timeoutMillis: Long)
 }
 
 class LiveProviders(
@@ -32,13 +41,14 @@ class LiveProviders(
     private val io: CoroutineDispatcher,
     private val clock: () -> Long = System::currentTimeMillis,
     private val idleMillis: Long = DEFAULT_IDLE_MILLIS,
-) : ContextWarmUp {
+) : ContextWarmUp, ContextReadiness {
     private class Connection(val binding: ProviderBinding) {
         @Volatile var provider: RemoteContextProvider? = null
     }
 
     private val connections = ConcurrentHashMap<String, Connection>()
     private val discovered = MutableStateFlow<List<ProviderComponent>>(emptyList())
+    private val registrations = MutableStateFlow(0)
 
     val available: StateFlow<List<ProviderComponent>> = discovered.asStateFlow()
 
@@ -67,6 +77,18 @@ class LiveProviders(
             if (grants.isEnabled(component.packageName)) connect(component)
         }
     }
+
+    override fun anyEnabled(): Boolean = discovered.value.any { grants.isEnabled(it.packageName) }
+
+    override suspend fun ensureConnected(timeoutMillis: Long) {
+        warmUp()
+        withTimeoutOrNull(timeoutMillis) { registrations.first { allEnabledConnected() } }
+    }
+
+    private fun allEnabledConnected(): Boolean =
+        discovered.value.all {
+            !grants.isEnabled(it.packageName) || connections[it.packageName]?.provider != null
+        }
 
     fun invalidate(packageName: String) {
         engine.invalidate(RemoteContextProvider.idFor(packageName))
@@ -97,7 +119,8 @@ class LiveProviders(
                 onConnected = { remote ->
                     scope.launch(io) { connection?.let { register(component, remote, it) } }
                 },
-                onDisconnected = { disconnect(packageName) },
+                onDisconnected = { connection?.let { lost(packageName, it) } },
+                onDied = { reconnect(component) },
             ) ?: return
         connection = Connection(binding)
         connections[packageName] = connection
@@ -126,6 +149,18 @@ class LiveProviders(
         val provider = RemoteContextProvider(descriptor, remote, io, clock)
         connection.provider = provider
         engine.register(provider)
+        registrations.update { it + 1 }
+    }
+
+    private fun lost(packageName: String, connection: Connection) {
+        if (connections[packageName] !== connection) return
+        connection.provider = null
+        engine.unregister(RemoteContextProvider.idFor(packageName))
+    }
+
+    private fun reconnect(component: ProviderComponent) {
+        disconnect(component.packageName)
+        if (grants.isEnabled(component.packageName)) connect(component)
     }
 
     private fun disconnect(packageName: String) {

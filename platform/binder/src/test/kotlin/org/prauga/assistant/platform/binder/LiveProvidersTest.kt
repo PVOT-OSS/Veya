@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.RemoteException
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
@@ -142,13 +143,42 @@ class LiveProvidersTest {
     }
 
     @Test
-    fun aDyingAppIsUnregistered() = runTest {
+    fun aRestartedAppIsUnregisteredUntilAndroidReconnectsIt() = runTest {
         enable()
         val live = live()
         live.warmUp()
         binder.connectAll(remote)
         binder.disconnectAll()
         assertTrue(engine.providers.value.isEmpty())
+        assertEquals(0, binder.unbound)
+        binder.connectAll(remote)
+        assertEquals(1, engine.providers.value.size)
+    }
+
+    @Test
+    fun aDeadBindingIsReplaced() = runTest {
+        enable()
+        val live = live()
+        live.warmUp()
+        binder.connectAll(remote)
+        binder.dieAll()
+        assertEquals(1, binder.unbound)
+        assertEquals(2, binder.bound.size)
+        binder.connectLatest(remote)
+        assertEquals(1, engine.providers.value.size)
+    }
+
+    @Test
+    fun ensureConnectedWaitsForEnabledApps() = runTest {
+        enable()
+        val live = live()
+        assertTrue(live.anyEnabled())
+        val waiting = launch { live.ensureConnected(5_000) }
+        runCurrent()
+        assertTrue(waiting.isActive)
+        binder.connectAll(remote)
+        runCurrent()
+        assertTrue(waiting.isCompleted)
     }
 
     private class FakeBinder : ProviderBinder {
@@ -156,19 +186,27 @@ class LiveProvidersTest {
         private val callbacks = mutableListOf<Pair<(IContextProvider) -> Unit, () -> Unit>>()
         var unbound = 0
 
+        private val deaths = mutableListOf<() -> Unit>()
+
         override fun bind(
             component: ProviderComponent,
             onConnected: (IContextProvider) -> Unit,
             onDisconnected: () -> Unit,
+            onDied: () -> Unit,
         ): ProviderBinding {
             bound += component
             callbacks += onConnected to onDisconnected
+            deaths += onDied
             return ProviderBinding { unbound++ }
         }
 
-        fun connectAll(remote: IContextProvider) = callbacks.forEach { it.first(remote) }
+        fun connectAll(remote: IContextProvider) = callbacks.toList().forEach { it.first(remote) }
 
-        fun disconnectAll() = callbacks.forEach { it.second() }
+        fun connectLatest(remote: IContextProvider) = callbacks.last().first(remote)
+
+        fun disconnectAll() = callbacks.toList().forEach { it.second() }
+
+        fun dieAll() = deaths.toList().forEach { it() }
     }
 
     private class FakeRemote : IContextProvider.Stub() {
