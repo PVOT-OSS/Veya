@@ -5,6 +5,7 @@ package org.prauga.assistant.sdk
 
 import org.prauga.assistant.sdk.protocol.ContextItemParcel
 import org.prauga.assistant.sdk.protocol.ContextQueryParcel
+import org.prauga.assistant.sdk.protocol.ContextTypeParcel
 import org.prauga.assistant.sdk.protocol.Protocol
 
 internal fun ContextItem.toParcel(): ContextItemParcel {
@@ -36,3 +37,21 @@ internal fun Sensitivity.toCode(): Int =
         Sensitivity.PERSONAL -> Protocol.SENSITIVITY_PERSONAL
         Sensitivity.SENSITIVE -> Protocol.SENSITIVITY_SENSITIVE
     }
+
+internal fun ContextType.toParcel(): ContextTypeParcel {
+    val flagList = flags.take(Protocol.MAX_FLAGS)
+    return ContextTypeParcel(
+        id = id.take(Protocol.MAX_TYPE_CHARS),
+        label = label.take(Protocol.MAX_TITLE_CHARS),
+        synonyms = synonyms.words(),
+        flagKeys = Array(flagList.size) { flagList[it].key.take(Protocol.MAX_TYPE_CHARS) },
+        flagSynonyms = Array(flagList.size) { flagList[it].synonyms.words() },
+    )
+}
+
+private fun List<String>.words(): Array<String> =
+    asSequence()
+        .take(Protocol.MAX_SYNONYMS)
+        .map { it.take(Protocol.MAX_WORD_CHARS) }
+        .toList()
+        .toTypedArray()

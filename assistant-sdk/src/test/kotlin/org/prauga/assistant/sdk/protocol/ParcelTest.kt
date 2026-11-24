@@ -118,6 +118,25 @@ class ParcelTest {
         assertEquals(10, copy.limit)
     }
 
+    @Test
+    fun typesSurviveARoundTrip() {
+        val type =
+            ContextTypeParcel(
+                "message",
+                "Messages",
+                arrayOf("texts", "sms"),
+                arrayOf("unread"),
+                arrayOf(arrayOf("unread", "new")),
+            )
+        val copy =
+            roundTrip({ type.writeToParcel(it, 0) }, ContextTypeParcel.CREATOR::createFromParcel)
+        assertEquals("message", copy.id)
+        assertEquals("Messages", copy.label)
+        assertArrayEquals(arrayOf("texts", "sms"), copy.synonyms)
+        assertArrayEquals(arrayOf("unread"), copy.flagKeys)
+        assertArrayEquals(arrayOf("unread", "new"), copy.flagSynonyms[0])
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun rejectsFramesLongerThanTheData() {
         roundTrip({ it.writeInt(10_000) }, ContextItemParcel.CREATOR::createFromParcel)

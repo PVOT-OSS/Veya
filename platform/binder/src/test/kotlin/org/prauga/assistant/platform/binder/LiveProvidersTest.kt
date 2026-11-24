@@ -24,6 +24,7 @@ import org.prauga.assistant.context.SkipReason
 import org.prauga.assistant.context.SkippedProvider
 import org.prauga.assistant.sdk.protocol.ContextItemParcel
 import org.prauga.assistant.sdk.protocol.ContextQueryParcel
+import org.prauga.assistant.sdk.protocol.ContextTypeParcel
 import org.prauga.assistant.sdk.protocol.IContextProvider
 import org.prauga.assistant.sdk.protocol.Protocol
 import org.robolectric.RobolectricTestRunner
@@ -79,7 +80,15 @@ class LiveProvidersTest {
         val item = result.items.single()
         assertEquals("org.prauga.messages", item.source.packageName)
         assertEquals("Messages", item.source.label)
-        assertEquals(setOf("conversation"), engine.providers.value.values.single().descriptor.types)
+        val descriptor = engine.providers.value.values.single().descriptor
+        assertEquals(setOf("conversation"), descriptor.types)
+        val type = descriptor.vocabulary.single()
+        assertEquals("Conversations", type.label)
+        assertEquals(
+            listOf("chats", "x".repeat(Protocol.MAX_WORD_CHARS), "conversation"),
+            type.synonyms,
+        )
+        assertEquals(listOf("new", "unread"), type.flags.single().synonyms)
         assertEquals("sam", remote.lastQuery?.text)
     }
 
@@ -238,5 +247,16 @@ class LiveProvidersTest {
         override fun types(): Array<String> = arrayOf("conversation")
 
         override fun maxSensitivity(): Int = Protocol.SENSITIVITY_PERSONAL
+
+        override fun describe(): Array<ContextTypeParcel> =
+            arrayOf(
+                ContextTypeParcel(
+                    "conversation",
+                    "Conversations",
+                    arrayOf("Chats", "x".repeat(100)),
+                    arrayOf("unread"),
+                    arrayOf(arrayOf("New")),
+                )
+            )
     }
 }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.context.ContextProviderDescriptor
 import org.prauga.assistant.sdk.protocol.IContextProvider
+import org.prauga.assistant.sdk.protocol.Protocol
 import timber.log.Timber
 
 fun interface ContextWarmUp {
@@ -133,12 +134,23 @@ class LiveProviders(
     ) {
         val descriptor =
             try {
+                val vocabulary =
+                    if (remote.protocolVersion() >= Protocol.VERSION_DESCRIBE) {
+                        remote.describe().orEmpty().take(Protocol.MAX_TYPES).mapNotNull {
+                            it?.toTypeInfo()
+                        }
+                    } else {
+                        remote.types().orEmpty().take(Protocol.MAX_TYPES).mapNotNull {
+                            it?.let(::bareTypeInfo)
+                        }
+                    }
                 ContextProviderDescriptor(
                     id = RemoteContextProvider.idFor(component.packageName),
                     packageName = component.packageName,
                     label = component.label,
-                    types = remote.types().orEmpty().filterNotNull().toSet(),
+                    types = vocabulary.mapTo(HashSet()) { it.id },
                     maxSensitivity = remote.maxSensitivity().toSensitivity(),
+                    vocabulary = vocabulary,
                 )
             } catch (e: RemoteException) {
                 Timber.d(e, "Provider left while being described")

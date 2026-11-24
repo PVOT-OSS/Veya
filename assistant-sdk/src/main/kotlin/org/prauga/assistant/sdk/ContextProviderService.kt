@@ -9,6 +9,7 @@ import android.os.Binder
 import android.os.IBinder
 import org.prauga.assistant.sdk.protocol.ContextItemParcel
 import org.prauga.assistant.sdk.protocol.ContextQueryParcel
+import org.prauga.assistant.sdk.protocol.ContextTypeParcel
 import org.prauga.assistant.sdk.protocol.IContextProvider
 import org.prauga.assistant.sdk.protocol.Protocol
 
@@ -36,7 +37,15 @@ class ContextProviderService : Service() {
             }
 
             override fun types(): Array<String> =
-                verifiedProvider()?.types?.toTypedArray() ?: emptyArray()
+                verifiedProvider()?.types?.take(Protocol.MAX_TYPES)?.map { it.id }?.toTypedArray()
+                    ?: emptyArray()
+
+            override fun describe(): Array<ContextTypeParcel> =
+                verifiedProvider()
+                    ?.types
+                    ?.take(Protocol.MAX_TYPES)
+                    ?.map { it.toParcel() }
+                    ?.toTypedArray() ?: emptyArray()
 
             override fun maxSensitivity(): Int =
                 verifiedProvider()?.maxSensitivity?.toCode() ?: Protocol.SENSITIVITY_PUBLIC

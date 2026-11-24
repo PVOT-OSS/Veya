@@ -15,7 +15,17 @@ data class ContextProviderDescriptor(
     val label: String,
     val types: Set<String>,
     val maxSensitivity: Sensitivity,
+    val vocabulary: List<ContextTypeInfo> = emptyList(),
 )
+
+data class ContextTypeInfo(
+    val id: String,
+    val label: String,
+    val synonyms: List<String>,
+    val flags: List<ContextFlagInfo> = emptyList(),
+)
+
+data class ContextFlagInfo(val key: String, val synonyms: List<String>)
 
 class ContextProviderException(message: String?, cause: Throwable? = null) :
     Exception(message, cause)

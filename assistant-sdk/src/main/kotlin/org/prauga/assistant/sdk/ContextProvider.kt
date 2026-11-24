@@ -4,7 +4,7 @@
 package org.prauga.assistant.sdk
 
 interface ContextProvider {
-    val types: Set<String>
+    val types: List<ContextType>
 
     val maxSensitivity: Sensitivity
 

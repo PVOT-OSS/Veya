@@ -5,6 +5,7 @@ package org.prauga.assistant.sdk.protocol;
 
 import org.prauga.assistant.sdk.protocol.ContextItemParcel;
 import org.prauga.assistant.sdk.protocol.ContextQueryParcel;
+import org.prauga.assistant.sdk.protocol.ContextTypeParcel;
 
 interface IContextProvider {
     int protocolVersion() = 0;
@@ -16,4 +17,6 @@ interface IContextProvider {
     String[] types() = 3;
 
     int maxSensitivity() = 4;
+
+    ContextTypeParcel[] describe() = 5;
 }

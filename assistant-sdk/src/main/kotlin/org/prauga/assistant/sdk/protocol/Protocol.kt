@@ -4,7 +4,8 @@
 package org.prauga.assistant.sdk.protocol
 
 object Protocol {
-    const val VERSION = 1
+    const val VERSION = 2
+    const val VERSION_DESCRIBE = 2
 
     const val ACTION_REGISTRY = "org.prauga.assistant.sdk.action.REGISTRY"
     const val ACTION_PROVIDER = "org.prauga.assistant.sdk.action.PROVIDER"
@@ -17,6 +18,10 @@ object Protocol {
     const val MAX_CONTENT_CHARS = 2_000
     const val MAX_METADATA_ENTRIES = 16
     const val MAX_METADATA_CHARS = 200
+    const val MAX_TYPES = 32
+    const val MAX_SYNONYMS = 16
+    const val MAX_FLAGS = 8
+    const val MAX_WORD_CHARS = 40
 
     const val SENSITIVITY_PUBLIC = 0
     const val SENSITIVITY_PERSONAL = 1
