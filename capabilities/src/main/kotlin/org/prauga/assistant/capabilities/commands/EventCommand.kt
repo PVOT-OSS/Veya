@@ -55,9 +55,12 @@ class EventCommand(
     private fun split(subject: String, current: ZonedDateTime): Pair<String, ParsedTime>? {
         var space = subject.indexOf(' ')
         while (space > 0) {
-            val title = subject.substring(0, space).trim()
-            val time = times.parse(subject.substring(space + 1), current)
-            if (time != null && title.isNotEmpty()) return title to time
+            val rest = subject.substring(space + 1)
+            if (times.begins(rest.substringBefore(' '))) {
+                val title = subject.substring(0, space).trim()
+                val time = times.parse(rest, current)
+                if (time != null && title.isNotEmpty()) return title to time
+            }
             space = subject.indexOf(' ', space + 1)
         }
         return null

@@ -32,6 +32,8 @@ class Times(
     private val fractions = lexicon.table("time.fraction")
     private val past = lexicon.table("time.past")
     private val to = lexicon.table("time.to")
+    private val starters =
+        listOf(fillers, relative, next, days, weekdays, meridiems, parts, fixed, fractions)
     private val clockPattern =
         Regex(
             "(\\d{1,2})(?::(\\d{2}))?(" +
@@ -131,7 +133,18 @@ class Times(
 
     private fun hourWord(word: String?): Int? {
         word ?: return null
-        return word.toIntOrNull() ?: numbers.parse(word)?.toInt()
+        word.toIntOrNull()?.let {
+            return it
+        }
+        if (!numbers.begins(word)) return null
+        val read = numbers.read(listOf(word), 0) ?: return null
+        return read.value.toInt().takeIf { read.consumed == 1 }
+    }
+
+    /** True when a time could start with [word], so callers can skip text that can't be one. */
+    fun begins(word: String): Boolean {
+        val lower = word.lowercase()
+        return numbers.begins(lower) || starters.any { it.begins(lower) }
     }
 
     private fun resolve(

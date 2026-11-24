@@ -27,6 +27,12 @@ class Numbers(lexicon: Lexicon) {
         return words.at(tokens, from)?.let { Read(it.value, it.consumed) }
     }
 
+    /** True when a number can start with [word]. */
+    fun begins(word: String): Boolean =
+        word.firstOrNull()?.isDigit() == true ||
+            words.begins(word) ||
+            tens.begins(word.substringBefore('-'))
+
     fun parse(text: String): Double? {
         val tokens = Tokens.of(text)
         val read = read(tokens, 0) ?: return null
