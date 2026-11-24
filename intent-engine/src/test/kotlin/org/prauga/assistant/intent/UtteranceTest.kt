@@ -32,4 +32,10 @@ class UtteranceTest {
     fun keepsInnerApostrophes() {
         assertEquals("what's my battery", Utterance("What\u2019s my battery?").normalized)
     }
+
+    @Test
+    fun wakeWordsGoOnlyFromTheStart() {
+        assertEquals("call veya test", Utterance("Hey Veya, call Veya Test", fillers).normalized)
+        assertEquals("what time is it", Utterance("Veya what time is it", fillers).normalized)
+    }
 }

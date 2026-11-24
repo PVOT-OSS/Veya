@@ -7,8 +7,11 @@
 # Words dropped before anything is matched
 # ---------------------------------------------------------------------------------------------
 
-[words utterance.filler]
-hey veya | ok veya | veya | please | could you | can you | would you | i want to | i'd like to
+[words utterance.filler]   # dropped anywhere
+please | could you | can you | would you | i want to | i'd like to
+
+[words utterance.wake]   # dropped only at the start, so names like Veya survive
+hey veya | ok veya | okay veya | veya
 
 # ---------------------------------------------------------------------------------------------
 # Numbers
