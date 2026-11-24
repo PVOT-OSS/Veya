@@ -25,8 +25,10 @@ class CalculateHandler(private val context: Context, lexicon: Lexicon) : IntentH
     private val arithmetic = Arithmetic(lexicon)
 
     override fun match(utterance: Utterance): IntentMatch? {
+        if (!arithmetic.mightBe(utterance.normalized)) return null
         val found = matcher.match(utterance) ?: return null
         val subject = found.entities[EXPRESSION] ?: return null
+        if (!arithmetic.mightBe(subject)) return null
         val expression = original(utterance.raw, subject)
         val result = arithmetic.evaluate(expression) ?: return null
         val asked = found.confidence >= ASKED

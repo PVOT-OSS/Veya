@@ -62,8 +62,45 @@ class Arithmetic(lexicon: Lexicon, private val numbers: Numbers = Numbers(lexico
             .map { (name, op) -> lexicon.optional(name) to op }
     private val fillers = lexicon.optional("math.filler")
 
+    private val operatorWords: List<String> =
+        words.flatMap { it.first.keys }.filter { it.length >= MIN_HINT_LENGTH }
+
+    /**
+     * False when [text] surely isn't arithmetic: no digit, operator symbol or operator word. Lets
+     * callers skip [evaluate] for ordinary sentences; allocates nothing.
+     */
+    fun mightBe(text: String): Boolean {
+        for (char in text) if (char.isDigit() || SYMBOL_CHARS.indexOf(char) >= 0) return true
+        for (index in operatorWords.indices) if (containsWord(text, operatorWords[index]))
+            return true
+        return false
+    }
+
+    private fun containsWord(text: String, word: String): Boolean {
+        var from = text.indexOf(word, ignoreCase = true)
+        while (from >= 0) {
+            val end = from + word.length
+            val clearBefore = from == 0 || !text[from - 1].isLetter()
+            val clearAfter = end == text.length || !text[end].isLetter()
+            if (clearBefore && clearAfter) return true
+            from = text.indexOf(word, from + 1, ignoreCase = true)
+        }
+        return false
+    }
+
+    /** True when an expression can start with [word]: a number, a sign, a root or a filler. */
+    private fun canStart(word: String): Boolean {
+        val first = word.firstOrNull() ?: return false
+        if (first.isDigit() || SYMBOL_CHARS.indexOf(first) >= 0 || first == '.') return true
+        val lower = word.lowercase()
+        return numbers.begins(lower) ||
+            fillers.begins(lower) ||
+            words.any { it.first.begins(lower) }
+    }
+
     /** The value of [text], or null when it isn't arithmetic. */
     fun evaluate(text: String): Result? {
+        if (!canStart(text.trimStart().substringBefore(' '))) return null
         val tokens = tokenize(text) ?: return null
         if (tokens.isEmpty()) return null
         val parser = Parser(tokens)
@@ -250,6 +287,8 @@ class Arithmetic(lexicon: Lexicon, private val numbers: Numbers = Numbers(lexico
         const val MAX_EXPONENT = 999
         const val NEWTON_STEPS = 4
         const val SHOWN_DECIMALS = 10
+        const val MIN_HINT_LENGTH = 3
+        const val SYMBOL_CHARS = "+-*/×÷^%()−"
         val GROUPING = Regex("(?<=\\d),(?=\\d{3}(?!\\d))")
         val PIECE = Regex("\\d*\\.?\\d+|[+\\-*/×÷^%()−]|[^\\s\\d+\\-*/×÷^%()−]+")
         val SYMBOLS =
