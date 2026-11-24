@@ -51,6 +51,8 @@ include(":context-engine")
 
 include(":capabilities")
 
+include(":understanding")
+
 include(":benchmarks")
 
 include(":assistant-sdk")
