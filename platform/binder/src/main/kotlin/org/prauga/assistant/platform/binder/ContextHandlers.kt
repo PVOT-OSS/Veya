@@ -6,10 +6,12 @@ package org.prauga.assistant.platform.binder
 import android.content.Context
 import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.intent.IntentHandler
+import org.prauga.assistant.understanding.Lexicon
 
 object ContextHandlers {
     fun create(
         context: Context,
+        lexicon: Lexicon,
         engine: ContextEngine,
         readiness: ContextReadiness,
         vocabulary: VocabularySource,
@@ -17,8 +19,8 @@ object ContextHandlers {
     ): List<IntentHandler> {
         val replies = ContextReplies(context, engine, readiness)
         return listOf(
-            ContextSearchHandler(context, replies),
-            VocabularyHandler(context, vocabulary, grants, replies),
+            ContextSearchHandler(context, lexicon, replies),
+            VocabularyHandler(context, lexicon, vocabulary, grants, replies),
         )
     }
 }

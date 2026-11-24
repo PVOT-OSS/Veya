@@ -5,65 +5,43 @@ package org.prauga.assistant.understanding
 
 import java.time.Duration
 
-object Durations {
-    private val UNITS =
-        mapOf(
-            "second" to 1L,
-            "seconds" to 1L,
-            "sec" to 1L,
-            "secs" to 1L,
-            "s" to 1L,
-            "minute" to 60L,
-            "minutes" to 60L,
-            "min" to 60L,
-            "mins" to 60L,
-            "m" to 60L,
-            "hour" to 3_600L,
-            "hours" to 3_600L,
-            "hr" to 3_600L,
-            "hrs" to 3_600L,
-            "h" to 3_600L,
-            "day" to 86_400L,
-            "days" to 86_400L,
-            "d" to 86_400L,
-        )
-    private val COMPACT = Regex("(\\d+(?:\\.\\d+)?)([a-z]+)")
-    private val ARTICLES = setOf("a", "an")
-    private val QUARTER_SKIP = setOf("of", "an", "a")
-    private val AFTER_ARTICLE = setOf("quarter", "half", "couple")
-    private const val HALF = 0.5
-    private const val QUARTER = 0.25
-    private const val MILLIS = 1_000.0
+/** Reads lengths of time such as "an hour and a half", "90 seconds" or "2h 5m". */
+class Durations(lexicon: Lexicon, private val numbers: Numbers = Numbers(lexicon)) {
+    private val units = lexicon.table("duration.unit")
+    private val joiners = lexicon.table("duration.joiner")
+    private val fractions = lexicon.table("duration.fraction")
+    private val fractionLinks = lexicon.table("duration.fraction.link")
+    private val andHalf = lexicon.table("duration.and.half")
+    private val compact = Regex("(\\d+(?:\\.\\d+)?)(\\p{L}+)")
 
-    fun parse(text: String): Duration? {
-        val tokens = expand(Tokens.of(text))
+    fun parse(text: String): Duration? = parse(expand(Tokens.of(text)))
+
+    internal fun parse(tokens: List<String>): Duration? {
         var seconds = 0.0
-        var lastUnit = 0L
+        var lastUnit = 0.0
         var index = 0
         var parts = 0
         while (index < tokens.size) {
-            val word = tokens[index]
+            val half = if (parts > 0) andHalf.at(tokens, index) else null
+            val fraction = if (half == null) fractions.at(tokens, index) else null
             when {
-                word == "and" || word == "for" -> index++
-                word in ARTICLES && tokens.getOrNull(index + 1) in AFTER_ARTICLE && parts == 0 ->
-                    index++
-                word == "a" && tokens.getOrNull(index + 1) == "half" && parts > 0 -> {
+                tokens[index] in joiners -> index++
+                half != null -> {
                     seconds += lastUnit * HALF
-                    index += 2
+                    index += half.consumed
                 }
-                word == "quarter" ||
-                    (word == "half" && tokens.getOrNull(index + 1) in ARTICLES) -> {
-                    var next = index + 1
-                    while (next < tokens.size && tokens[next] in QUARTER_SKIP) next++
-                    val unit = UNITS[tokens.getOrNull(next)] ?: return null
-                    seconds += unit * if (word == "quarter") QUARTER else HALF
+                fraction != null -> {
+                    var next = index + fraction.consumed
+                    while (tokens.getOrNull(next) in fractionLinks) next++
+                    val unit = units[tokens.getOrNull(next)] ?: return null
+                    seconds += unit * fraction.value
                     lastUnit = unit
                     index = next + 1
                     parts++
                 }
                 else -> {
-                    val number = Numbers.read(tokens, index) ?: return null
-                    val unit = UNITS[tokens.getOrNull(index + number.consumed)] ?: return null
+                    val number = numbers.read(tokens, index) ?: return null
+                    val unit = units[tokens.getOrNull(index + number.consumed)] ?: return null
                     seconds += number.value * unit
                     lastUnit = unit
                     index += number.consumed + 1
@@ -75,11 +53,16 @@ object Durations {
         return Duration.ofMillis((seconds * MILLIS).toLong())
     }
 
-    private fun expand(tokens: List<String>): List<String> =
+    internal fun expand(tokens: List<String>): List<String> =
         tokens.flatMap { token ->
-            val match = COMPACT.matchEntire(token)
-            if (match != null && match.groupValues[2] in UNITS)
+            val match = compact.matchEntire(token)
+            if (match != null && match.groupValues[2] in units)
                 listOf(match.groupValues[1], match.groupValues[2])
             else listOf(token)
         }
+
+    private companion object {
+        const val HALF = 0.5
+        const val MILLIS = 1_000.0
+    }
 }

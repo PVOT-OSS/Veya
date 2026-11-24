@@ -13,24 +13,18 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
 class TimeHandler(
     private val context: Context,
+    lexicon: Lexicon,
     private val clock: Clock = Clock.systemDefaultZone(),
 ) : IntentHandler {
     override val descriptor = IntentDescriptor(ID, context.getString(R.string.intent_time))
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(
-                rule("what time is it( now| right now)?", 0.95f),
-                rule("((what's|what is|tell me) )?(the )?(current )?time( now| right now)?", 0.95f),
-            ),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

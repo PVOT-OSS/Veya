@@ -13,6 +13,8 @@ import org.prauga.assistant.intent.IntentEngine
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PlatformGate
 import org.prauga.assistant.intent.Resolution
+import org.prauga.assistant.intent.Utterance
+import org.prauga.assistant.understanding.Lexicon
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -25,8 +27,13 @@ class DeviceHandlersTest {
 
             override fun isGranted(permission: String) = true
         }
+    private val lexicon = Lexicon.english()
     private val engine =
-        IntentEngine(DeviceHandlers.create(ApplicationProvider.getApplicationContext()), gate)
+        IntentEngine(
+            DeviceHandlers.create(ApplicationProvider.getApplicationContext(), lexicon),
+            gate,
+            Utterance.Fillers.of(lexicon),
+        )
 
     private fun intentOf(text: String): String? =
         (engine.resolve(text) as? Resolution.Matched)?.candidate?.match?.intentId

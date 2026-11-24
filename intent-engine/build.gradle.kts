@@ -4,6 +4,7 @@
 plugins { alias(libs.plugins.pvot.jvm.library) }
 
 dependencies {
+    api(project(":understanding"))
     api(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 }

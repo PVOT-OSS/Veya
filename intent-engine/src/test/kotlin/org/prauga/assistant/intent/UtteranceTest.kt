@@ -5,14 +5,22 @@ package org.prauga.assistant.intent
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.prauga.assistant.understanding.Lexicon
 
 class UtteranceTest {
+    private val fillers = Utterance.Fillers.of(Lexicon.english())
+
     @Test
     fun normalizesCaseFillersAndPunctuation() {
         assertEquals(
             "turn on the flashlight",
-            Utterance("Hey Veya, please turn on the FLASHLIGHT!").normalized,
+            Utterance("Hey Veya, please turn on the FLASHLIGHT!", fillers).normalized,
         )
+    }
+
+    @Test
+    fun withoutFillersEveryWordStays() {
+        assertEquals("please open maps", Utterance("Please open Maps").normalized)
     }
 
     @Test

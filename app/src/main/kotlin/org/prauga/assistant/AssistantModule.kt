@@ -21,6 +21,7 @@ import org.prauga.assistant.context.ContextEngine
 import org.prauga.assistant.core.Assistant
 import org.prauga.assistant.core.ConversationStore
 import org.prauga.assistant.intent.IntentEngine
+import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.memory.DonatedContextStore
 import org.prauga.assistant.memory.MemoryEngine
 import org.prauga.assistant.platform.android.AndroidPlatformGate
@@ -29,6 +30,7 @@ import org.prauga.assistant.platform.binder.ContextHandlers
 import org.prauga.assistant.platform.binder.IntegrationGrants
 import org.prauga.assistant.platform.binder.LiveProviders
 import org.prauga.assistant.platform.binder.VocabularyStore
+import org.prauga.assistant.understanding.Lexicon
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class IoDispatcher
 
@@ -48,17 +50,26 @@ object AssistantModule {
 
     @Provides
     @Singleton
+    fun lexicon(@ApplicationContext context: Context): Lexicon {
+        val locales = context.resources.configuration.locales
+        return Lexicon.load((0 until locales.size()).map { locales[it] })
+    }
+
+    @Provides
+    @Singleton
     fun intentEngine(
         @ApplicationContext context: Context,
+        lexicon: Lexicon,
         contextEngine: ContextEngine,
         live: LiveProviders,
         vocabulary: VocabularyStore,
         grants: IntegrationGrants,
     ): IntentEngine =
         IntentEngine(
-            DeviceHandlers.create(context) +
-                ContextHandlers.create(context, contextEngine, live, vocabulary, grants),
+            DeviceHandlers.create(context, lexicon) +
+                ContextHandlers.create(context, lexicon, contextEngine, live, vocabulary, grants),
             AndroidPlatformGate(context),
+            Utterance.Fillers.of(lexicon),
         )
 
     @Provides

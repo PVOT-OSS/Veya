@@ -8,6 +8,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class NumbersTest {
+    private val numbers = Numbers(Lexicon.english())
+
     @Test
     fun readsDigitsAndWords() {
         val cases =
@@ -27,14 +29,14 @@ class NumbersTest {
                 "couple" to 2.0,
             )
         cases.forEach { (text, value) ->
-            assertEquals(text, value, Numbers.parse(text) ?: Double.NaN, 1e-9)
+            assertEquals(text, value, numbers.parse(text) ?: Double.NaN, 1e-9)
         }
     }
 
     @Test
     fun rejectsWhatIsNotANumber() {
         listOf("", "seven apples", "lots", "twenty zero", "1.2.3").forEach {
-            assertNull(it, Numbers.parse(it))
+            assertNull(it, numbers.parse(it))
         }
     }
 }

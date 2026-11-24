@@ -11,9 +11,12 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.Utterance
+import org.prauga.assistant.understanding.Lexicon
+import org.prauga.assistant.understanding.Phrase
 
 internal class VocabularyHandler(
     context: Context,
+    private val lexicon: Lexicon,
     private val vocabulary: VocabularySource,
     private val grants: IntegrationGrants,
     private val replies: ContextReplies,
@@ -25,20 +28,20 @@ internal class VocabularyHandler(
         val granted: Map<String, ContextGrant>,
         val types: Map<String, Set<String>>,
         val flags: Map<String, Set<String>>,
-        val patterns: List<Pattern>,
+        val phrases: List<Phrase>,
     )
 
-    private class Pattern(val regex: Regex, val groups: List<String>)
+    private val messageWords = lexicon.words(MESSAGE_WORDS)
 
     @Volatile private var index: Index? = null
 
     override fun match(utterance: Utterance): IntentMatch? {
         val current = currentIndex() ?: return null
         val text = utterance.normalized
-        for (pattern in current.patterns) {
-            val found = pattern.regex.matchEntire(text) ?: continue
+        for (phrase in current.phrases) {
+            val found = phrase.pattern.matchEntire(text) ?: continue
             val entities = HashMap<String, String>(4)
-            pattern.groups.forEach { name ->
+            phrase.slots.forEach { name ->
                 found.groups[name]
                     ?.value
                     ?.trim()
@@ -46,7 +49,7 @@ internal class VocabularyHandler(
                     ?.let { entities[name] = it }
             }
             if (TYPE !in entities && FLAG !in entities && SUBJECT !in entities) continue
-            return IntentMatch(ID, CONFIDENCE, entities)
+            return IntentMatch(ID, phrase.confidence, entities)
         }
         return null
     }
@@ -59,7 +62,7 @@ internal class VocabularyHandler(
         val flagWord = match.entities[FLAG]
         val typeIds =
             typeWord?.let { current.types[it] }
-                ?: current.types[MESSAGE_WORDS.firstOrNull { it in current.types }].orEmpty()
+                ?: current.types[messageWords.firstOrNull { it in current.types }].orEmpty()
         val flagKeys = flagWord?.let { current.flags[it] }.orEmpty()
         val app = match.entities[APP]
         val subject = match.entities[SUBJECT]
@@ -107,41 +110,13 @@ internal class VocabularyHandler(
             }
         }
         if (types.isEmpty()) return Index(apps, granted, emptyMap(), emptyMap(), emptyList())
-        val typeAlternation = alternation(types.keys)
-        val flagAlternation = if (flags.isEmpty()) NEVER else alternation(flags.keys)
-        val messageTypes = MESSAGE_WORDS.any { it in types }
-        val patterns =
-            listOfNotNull(
-                Pattern(
-                    Regex(
-                        "(?:(?:$FILLER) )*(?:(?<$FLAG>$flagAlternation) )?(?<$TYPE>$typeAlternation)" +
-                            "(?: (?:$LINKS) (?<$SUBJECT>.+?))?(?: in (?:my )?(?<$APP>[\\p{L}\\p{N} ]+?)(?: app)?)?"
-                    ),
-                    listOf(TYPE, FLAG, SUBJECT, APP),
-                ),
-                Pattern(
-                    Regex(
-                        "(?:search|look in|find in) (?:my )?(?<$TYPE>$typeAlternation) for (?<$SUBJECT>.+)"
-                    ),
-                    listOf(TYPE, SUBJECT),
-                ),
-                if (messageTypes) {
-                    Pattern(
-                        Regex("what did (?<$SUBJECT>.+?) (?:say|send|text|write)(?: me)?"),
-                        listOf(SUBJECT),
-                    )
-                } else {
-                    null
-                },
-                if (messageTypes)
-                    Pattern(Regex("(?:(?:$FILLER) )*(?<$FLAG>$flagAlternation)"), listOf(FLAG))
-                else null,
-            )
-        return Index(apps, granted, types, flags, patterns)
+        val lists = mapOf(TYPES to types.keys, FLAGS to flags.keys)
+        val phrases =
+            lexicon.phrases(ID, lists) +
+                if (messageWords.any { it in types }) lexicon.phrases(MESSAGES, lists)
+                else emptyList()
+        return Index(apps, granted, types, flags, phrases)
     }
-
-    private fun alternation(words: Set<String>): String =
-        words.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) }
 
     companion object {
         const val ID = "context.vocabulary"
@@ -150,12 +125,9 @@ internal class VocabularyHandler(
         private const val SUBJECT = "subject"
         private const val APP = "app"
         private const val LIMIT = 5
-        private const val CONFIDENCE = 0.95f
-        private const val NEVER = "(?!)"
-        private const val FILLER =
-            "any|show|show me|find|list|get|give me|search|search for|do i have|do i have any|are there|" +
-                "are there any|what are|what are my|my|all|all my|the|latest|recent"
-        private const val LINKS = "from|by|with|about|for|named|called|mentioning|containing|on|of"
-        private val MESSAGE_WORDS = listOf("messages", "message", "texts", "text")
+        private const val TYPES = "types"
+        private const val FLAGS = "flags"
+        private const val MESSAGES = "context.vocabulary.messages"
+        private const val MESSAGE_WORDS = "vocabulary.message"
     }
 }

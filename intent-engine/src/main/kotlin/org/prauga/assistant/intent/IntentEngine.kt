@@ -6,6 +6,7 @@ package org.prauga.assistant.intent
 class IntentEngine(
     handlers: List<IntentHandler>,
     private val gate: PlatformGate,
+    private val fillers: Utterance.Fillers = Utterance.Fillers.NONE,
     private val acceptThreshold: Float = DEFAULT_ACCEPT_THRESHOLD,
     private val ambiguityMargin: Float = DEFAULT_AMBIGUITY_MARGIN,
 ) {
@@ -21,7 +22,7 @@ class IntentEngine(
         get() = handlers.map { it.descriptor }
 
     fun resolve(text: String): Resolution {
-        val utterance = Utterance(text)
+        val utterance = Utterance(text, fillers)
         if (utterance.normalized.isEmpty()) return Resolution.NoMatch
         val candidates =
             handlers

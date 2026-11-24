@@ -13,25 +13,18 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
 class DateHandler(
     private val context: Context,
+    lexicon: Lexicon,
     private val clock: Clock = Clock.systemDefaultZone(),
 ) : IntentHandler {
     override val descriptor = IntentDescriptor(ID, context.getString(R.string.intent_date))
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(
-                rule("((what's|what is|tell me) )?(the |today's )?date( today)?", 0.95f),
-                rule("what day is (it|today)( today)?", 0.95f),
-                rule("what's today", 0.9f),
-            ),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

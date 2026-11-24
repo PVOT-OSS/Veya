@@ -12,116 +12,88 @@ import java.time.temporal.TemporalAdjusters
 
 data class ParsedTime(val at: ZonedDateTime, val dateGiven: Boolean)
 
-object Times {
-    private val CLOCK = Regex("(\\d{1,2})(?::(\\d{2}))?(am|pm|a\\.m\\.|p\\.m\\.)?")
-    private val DAYS =
-        mapOf(
-            "monday" to DayOfWeek.MONDAY,
-            "mon" to DayOfWeek.MONDAY,
-            "tuesday" to DayOfWeek.TUESDAY,
-            "tue" to DayOfWeek.TUESDAY,
-            "tues" to DayOfWeek.TUESDAY,
-            "wednesday" to DayOfWeek.WEDNESDAY,
-            "wed" to DayOfWeek.WEDNESDAY,
-            "thursday" to DayOfWeek.THURSDAY,
-            "thu" to DayOfWeek.THURSDAY,
-            "thurs" to DayOfWeek.THURSDAY,
-            "friday" to DayOfWeek.FRIDAY,
-            "fri" to DayOfWeek.FRIDAY,
-            "saturday" to DayOfWeek.SATURDAY,
-            "sat" to DayOfWeek.SATURDAY,
-            "sunday" to DayOfWeek.SUNDAY,
-            "sun" to DayOfWeek.SUNDAY,
+/**
+ * Reads a moment such as "tomorrow at 5", "next friday 8am", "half past seven" or "in 10 minutes".
+ * Parsing is strict: a word it can't place means no time at all.
+ */
+class Times(
+    lexicon: Lexicon,
+    private val numbers: Numbers = Numbers(lexicon),
+    private val durations: Durations = Durations(lexicon, numbers),
+) {
+    private val fillers = lexicon.table("time.filler")
+    private val relative = lexicon.table("time.relative")
+    private val next = lexicon.table("time.next")
+    private val days = lexicon.table("time.day")
+    private val weekdays = lexicon.table("weekday")
+    private val meridiems = lexicon.table("time.meridiem")
+    private val parts = lexicon.table("time.part")
+    private val fixed = lexicon.table("time.fixed")
+    private val fractions = lexicon.table("time.fraction")
+    private val past = lexicon.table("time.past")
+    private val to = lexicon.table("time.to")
+    private val clockPattern =
+        Regex(
+            "(\\d{1,2})(?::(\\d{2}))?(" +
+                meridiems.keys
+                    .sortedByDescending { it.length }
+                    .joinToString("|") { Regex.escape(it) } +
+                ")?"
         )
-    private val FILLER = setOf("at", "on", "for", "by", "the", "this", "o'clock", "oclock")
-    private const val NOON = 12
-    private const val MORNING_FROM = 7
-    private const val MINUTES_IN_HOUR = 60
-    private const val HALF_HOUR = 30
-    private const val QUARTER_HOUR = 15
-    private const val HOURS_IN_HALF_DAY = 12
 
-    private enum class Meridiem {
-        AM,
-        PM,
-    }
-
-    private class Clock(val hour: Int, val minute: Int, val meridiem: Meridiem?)
+    private class Clock(val hour: Int, val minute: Int, val afterNoon: Boolean?)
 
     fun parse(text: String, now: ZonedDateTime): ParsedTime? {
         val tokens = Tokens.of(text)
         if (tokens.isEmpty()) return null
-        if (tokens.first() == "in") {
-            val duration = Durations.parse(tokens.drop(1).joinToString(" ")) ?: return null
+        if (tokens.first() in relative) {
+            val duration = durations.parse(durations.expand(tokens.drop(1))) ?: return null
             return ParsedTime(now.plus(duration).truncatedTo(ChronoUnit.SECONDS), dateGiven = false)
         }
         var date: LocalDate? = null
         var clock: Clock? = null
-        var hint: Meridiem? = null
+        var hint: Boolean? = null
         var index = 0
         while (index < tokens.size) {
             val word = tokens[index]
+            val day = days.at(tokens, index)
+            val filler = if (day == null) fillers.at(tokens, index) else null
             when {
-                word in FILLER -> index++
-                word == "today" -> {
-                    date = now.toLocalDate()
-                    index++
+                day != null -> {
+                    date = now.toLocalDate().plusDays(day.value.toLong())
+                    parts.at(tokens, index)?.let { hint = it.value > 0 }
+                    index += day.consumed
                 }
-                word == "tonight" -> {
-                    date = now.toLocalDate()
-                    hint = Meridiem.PM
-                    index++
-                }
-                word == "tomorrow" -> {
-                    date = now.toLocalDate().plusDays(1)
-                    index++
-                }
-                word == "day" &&
-                    tokens.getOrNull(index + 1) == "after" &&
-                    tokens.getOrNull(index + 2) == "tomorrow" -> {
-                    date = now.toLocalDate().plusDays(2)
-                    index += 3
-                }
-                word == "next" && DAYS.containsKey(tokens.getOrNull(index + 1)) -> {
-                    val day = DAYS.getValue(tokens[index + 1])
-                    date = now.toLocalDate().with(TemporalAdjusters.next(day))
+                filler != null -> index += filler.consumed
+                word in next && tokens.getOrNull(index + 1) in weekdays -> {
+                    val weekday = DayOfWeek.of(weekdays.getValue(tokens[index + 1]))
+                    date = now.toLocalDate().with(TemporalAdjusters.next(weekday))
                     index += 2
                 }
-                DAYS.containsKey(word) -> {
-                    date = now.toLocalDate().with(TemporalAdjusters.nextOrSame(DAYS.getValue(word)))
+                word in weekdays -> {
+                    val weekday = DayOfWeek.of(weekdays.getValue(word))
+                    date = now.toLocalDate().with(TemporalAdjusters.nextOrSame(weekday))
                     index++
                 }
-                word == "noon" || word == "midday" -> {
-                    clock = Clock(NOON, 0, Meridiem.PM)
+                word in fixed -> {
+                    val hour = fixed.getValue(word)
+                    clock = Clock(hour, 0, hour >= NOON)
                     index++
                 }
-                word == "midnight" -> {
-                    clock = Clock(0, 0, Meridiem.AM)
+                word in parts -> {
+                    hint = parts.getValue(word) > 0
                     index++
                 }
-                word == "morning" -> {
-                    hint = Meridiem.AM
+                word in meridiems -> {
+                    hint = meridiems.getValue(word) > 0
                     index++
                 }
-                word == "afternoon" || word == "evening" || word == "night" -> {
-                    hint = Meridiem.PM
-                    index++
-                }
-                word == "in" && tokens.getOrNull(index + 1) == "the" -> index += 2
-                word == "am" || word == "a.m." -> {
-                    hint = Meridiem.AM
-                    index++
-                }
-                word == "pm" || word == "p.m." -> {
-                    hint = Meridiem.PM
-                    index++
-                }
-                (word == "half" || word == "quarter") &&
-                    tokens.getOrNull(index + 1) in setOf("past", "to") -> {
+                word in fractions &&
+                    (tokens.getOrNull(index + 1) in past || tokens.getOrNull(index + 1) in to) -> {
                     val hour = hourWord(tokens.getOrNull(index + 2)) ?: return null
-                    val offset = if (word == "half") HALF_HOUR else QUARTER_HOUR
+                    val offset = fractions.getValue(word)
                     clock =
-                        if (tokens[index + 1] == "past") Clock(hour, offset, null)
+                        if (tokens[index + 1] in past) Clock(hour, offset, null)
                         else
                             Clock(
                                 (hour + HOURS_IN_HALF_DAY - 1) % HOURS_IN_HALF_DAY,
@@ -132,17 +104,15 @@ object Times {
                 }
                 else -> {
                     if (clock != null) return null
-                    val match = CLOCK.matchEntire(word)
+                    val match = clockPattern.matchEntire(word)
                     clock =
                         if (match != null) {
-                            val meridiem =
-                                match.groupValues[3]
-                                    .takeIf { it.isNotEmpty() }
-                                    ?.let { if (it.startsWith("a")) Meridiem.AM else Meridiem.PM }
                             Clock(
                                 match.groupValues[1].toInt(),
                                 match.groupValues[2].ifEmpty { "0" }.toInt(),
-                                meridiem,
+                                match.groupValues[3]
+                                    .takeIf { it.isNotEmpty() }
+                                    ?.let { meridiems.getValue(it) > 0 },
                             )
                         } else {
                             Clock(hourWord(word) ?: return null, 0, null)
@@ -154,36 +124,30 @@ object Times {
         val time =
             clock
                 ?: return date?.let {
-                    ParsedTime(
-                        it.atStartOfDay(now.zone).withHour(MORNING_FROM + 2),
-                        dateGiven = true,
-                    )
+                    ParsedTime(it.atTime(DATE_ONLY_HOUR, 0).atZone(now.zone), dateGiven = true)
                 }
         return resolve(time, hint, date, now)
     }
 
     private fun hourWord(word: String?): Int? {
         word ?: return null
-        word.toIntOrNull()?.let {
-            return it
-        }
-        return Numbers.parse(word)?.toInt()
+        return word.toIntOrNull() ?: numbers.parse(word)?.toInt()
     }
 
     private fun resolve(
         clock: Clock,
-        hint: Meridiem?,
+        hint: Boolean?,
         date: LocalDate?,
         now: ZonedDateTime,
     ): ParsedTime? {
         if (clock.minute !in 0 until MINUTES_IN_HOUR) return null
-        val meridiem = clock.meridiem ?: hint
+        val afterNoon = clock.afterNoon ?: hint
         val hour =
             when {
                 clock.hour > HOURS_IN_HALF_DAY ->
-                    if (clock.hour < 24 && meridiem != Meridiem.AM) clock.hour else return null
-                meridiem == Meridiem.AM -> if (clock.hour == HOURS_IN_HALF_DAY) 0 else clock.hour
-                meridiem == Meridiem.PM ->
+                    if (clock.hour < HOURS_IN_DAY && afterNoon != false) clock.hour else return null
+                afterNoon == false -> if (clock.hour == HOURS_IN_HALF_DAY) 0 else clock.hour
+                afterNoon == true ->
                     if (clock.hour == HOURS_IN_HALF_DAY) NOON else clock.hour + HOURS_IN_HALF_DAY
                 clock.hour == 0 -> 0
                 date != null ->
@@ -206,5 +170,16 @@ object Times {
         val morning = now.with(LocalTime.of(hour, minute)).truncatedTo(ChronoUnit.MINUTES)
         val evening = morning.plusHours(HOURS_IN_HALF_DAY.toLong())
         return listOf(morning, evening, morning.plusDays(1)).first { it.isAfter(now) }
+    }
+
+    private fun WordTable.getValue(word: String): Int = requireNotNull(get(word)).toInt()
+
+    private companion object {
+        const val NOON = 12
+        const val MORNING_FROM = 7
+        const val DATE_ONLY_HOUR = 9
+        const val MINUTES_IN_HOUR = 60
+        const val HOURS_IN_HALF_DAY = 12
+        const val HOURS_IN_DAY = 24
     }
 }

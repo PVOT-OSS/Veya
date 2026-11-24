@@ -12,19 +12,20 @@ import org.prauga.assistant.platform.android.handlers.OpenAppHandler
 import org.prauga.assistant.platform.android.handlers.OpenSettingsHandler
 import org.prauga.assistant.platform.android.handlers.TimeHandler
 import org.prauga.assistant.platform.android.handlers.TorchHandler
+import org.prauga.assistant.understanding.Lexicon
 
 object DeviceHandlers {
-    fun create(context: Context): List<IntentHandler> {
+    fun create(context: Context, lexicon: Lexicon): List<IntentHandler> {
         val launcher = ActivityLauncher(context)
         return listOf(
-            BatteryHandler(context),
-            TorchHandler(context, on = true),
-            TorchHandler(context, on = false),
-            OpenAppHandler(context, launcher),
-            OpenSettingsHandler(context, launcher),
-            TimeHandler(context),
-            DateHandler(context),
-            DeviceInfoHandler(context),
+            BatteryHandler(context, lexicon),
+            TorchHandler(context, lexicon, on = true),
+            TorchHandler(context, lexicon, on = false),
+            OpenAppHandler(context, launcher, lexicon),
+            OpenSettingsHandler(context, launcher, lexicon),
+            TimeHandler(context, lexicon),
+            DateHandler(context, lexicon),
+            DeviceInfoHandler(context, lexicon),
         )
     }
 }

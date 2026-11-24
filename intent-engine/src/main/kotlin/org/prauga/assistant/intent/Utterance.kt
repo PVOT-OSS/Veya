@@ -3,31 +3,34 @@
 
 package org.prauga.assistant.intent
 
-class Utterance(val raw: String) {
-    val normalized: String = normalize(raw)
+import org.prauga.assistant.understanding.Lexicon
 
-    private companion object {
-        val FILLERS =
-            listOf(
-                "hey veya",
-                "ok veya",
-                "veya",
-                "please",
-                "could you",
-                "can you",
-                "would you",
-                "i want to",
-                "i'd like to",
-            )
-        val WHITESPACE = Regex("\\s+")
-        val EDGE_PUNCTUATION = Regex("^[\\p{Punct}\\s]+|[\\p{Punct}\\s]+$")
-        val FILLER_PATTERN =
-            Regex("\\b(" + FILLERS.joinToString("|") { Regex.escape(it) } + ")\\b[,]?")
+class Utterance(val raw: String, fillers: Fillers = Fillers.NONE) {
+    val normalized: String = fillers.normalize(raw)
 
-        fun normalize(text: String): String {
-            val lower = text.lowercase().replace('\u2019', '\'')
-            val withoutFillers = FILLER_PATTERN.replace(lower, " ")
+    /** Words of the lexicon's languages that carry no meaning ("please", "hey veya"). */
+    class Fillers(words: Collection<String>) {
+        private val pattern: Regex? =
+            words
+                .takeIf { it.isNotEmpty() }
+                ?.sortedByDescending { it.length }
+                ?.let { list ->
+                    Regex("\\b(" + list.joinToString("|") { Regex.escape(it) } + ")\\b[,]?")
+                }
+
+        internal fun normalize(text: String): String {
+            val lower = text.lowercase().replace('’', '\'')
+            val withoutFillers = pattern?.replace(lower, " ") ?: lower
             return EDGE_PUNCTUATION.replace(WHITESPACE.replace(withoutFillers, " "), "").trim()
+        }
+
+        companion object {
+            val NONE = Fillers(emptyList())
+
+            fun of(lexicon: Lexicon) = Fillers(lexicon.words("utterance.filler"))
+
+            private val WHITESPACE = Regex("\\s+")
+            private val EDGE_PUNCTUATION = Regex("^[\\p{Punct}\\s]+|[\\p{Punct}\\s]+$")
         }
     }
 }

@@ -11,11 +11,14 @@ import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.IntentParameter
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
+import org.prauga.assistant.understanding.Lexicon
 
-internal class ContextSearchHandler(context: Context, private val replies: ContextReplies) :
-    IntentHandler {
+internal class ContextSearchHandler(
+    context: Context,
+    lexicon: Lexicon,
+    private val replies: ContextReplies,
+) : IntentHandler {
     override val descriptor =
         IntentDescriptor(
             ID,
@@ -23,19 +26,7 @@ internal class ContextSearchHandler(context: Context, private val replies: Conte
             parameters = listOf(IntentParameter(QUERY, required = true)),
         )
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(
-                rule(
-                    "(search|look in|find in) (my )?(?<app>[\\p{L}\\p{N} ]+?) for (?<query>.+)",
-                    0.8f,
-                    APP,
-                    QUERY,
-                ),
-                rule("(search|find|look up)( for)? (?<query>.+?)( in my apps)?", 0.75f, QUERY),
-            ),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

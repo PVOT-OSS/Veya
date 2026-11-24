@@ -3,6 +3,8 @@
 
 package org.prauga.assistant.intent
 
+import org.prauga.assistant.understanding.Phrase
+
 class PatternMatcher(private val intentId: String, private val rules: List<Rule>) {
     data class Rule(
         val pattern: Regex,
@@ -31,6 +33,9 @@ class PatternMatcher(private val intentId: String, private val rules: List<Rule>
     }
 
     companion object {
+        fun from(intentId: String, phrases: List<Phrase>) =
+            PatternMatcher(intentId, phrases.map { Rule(it.pattern, it.confidence, it.slots) })
+
         fun rule(pattern: String, confidence: Float, vararg entities: String) =
             Rule(Regex(pattern), confidence, entities.toList())
     }

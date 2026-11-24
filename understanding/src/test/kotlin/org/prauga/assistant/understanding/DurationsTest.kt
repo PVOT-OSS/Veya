@@ -9,6 +9,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class DurationsTest {
+    private val durations = Durations(Lexicon.english())
+
     @Test
     fun readsCommonDurations() {
         val cases =
@@ -40,7 +42,7 @@ class DurationsTest {
                 "ten seconds" to 10L,
             )
         cases.forEach { (text, seconds) ->
-            assertEquals(text, Duration.ofSeconds(seconds), Durations.parse(text))
+            assertEquals(text, Duration.ofSeconds(seconds), durations.parse(text))
         }
     }
 
@@ -56,6 +58,6 @@ class DurationsTest {
                 "0 minutes",
                 "ten minutes ago please",
             )
-            .forEach { assertNull(it, Durations.parse(it)) }
+            .forEach { assertNull(it, durations.parse(it)) }
     }
 }

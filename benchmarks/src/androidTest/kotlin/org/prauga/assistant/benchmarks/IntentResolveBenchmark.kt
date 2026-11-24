@@ -8,13 +8,21 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.prauga.assistant.intent.IntentEngine
+import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.AndroidPlatformGate
 import org.prauga.assistant.platform.android.DeviceHandlers
+import org.prauga.assistant.understanding.Lexicon
 
 @RunWith(AndroidJUnit4::class)
 class IntentResolveBenchmark {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val engine = IntentEngine(DeviceHandlers.create(context), AndroidPlatformGate(context))
+    private val lexicon = Lexicon.english()
+    private val engine =
+        IntentEngine(
+            DeviceHandlers.create(context, lexicon),
+            AndroidPlatformGate(context),
+            Utterance.Fillers.of(lexicon),
+        )
 
     @Test
     fun matchedCommand() {

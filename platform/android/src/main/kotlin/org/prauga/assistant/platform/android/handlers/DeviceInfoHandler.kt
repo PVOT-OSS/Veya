@@ -10,22 +10,14 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
-class DeviceInfoHandler(private val context: Context) : IntentHandler {
+class DeviceInfoHandler(private val context: Context, lexicon: Lexicon) : IntentHandler {
     override val descriptor = IntentDescriptor(ID, context.getString(R.string.intent_device_info))
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(
-                rule("(show )?(my )?(device|phone) (info|information|details)", 0.95f),
-                rule("what (phone|device) is this", 0.95f),
-                rule("((what|which) )?android version( is this| am i on| do i have)?", 0.9f),
-            ),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

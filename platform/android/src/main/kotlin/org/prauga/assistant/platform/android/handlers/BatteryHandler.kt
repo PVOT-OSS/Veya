@@ -12,26 +12,14 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
-class BatteryHandler(private val context: Context) : IntentHandler {
+class BatteryHandler(private val context: Context, lexicon: Lexicon) : IntentHandler {
     override val descriptor = IntentDescriptor(ID, context.getString(R.string.intent_battery))
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(
-                rule(
-                    "((what's|what is|how much|show|check)( is)? )?((my|the) )?(phone )?battery" +
-                        "( (level|percentage|status|life|charge))?( (left|remaining|now))?",
-                    0.95f,
-                ),
-                rule("how much (charge|battery)( do i have| is)?( left)?", 0.95f),
-                rule(".*\\bbattery\\b.*", 0.7f),
-            ),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

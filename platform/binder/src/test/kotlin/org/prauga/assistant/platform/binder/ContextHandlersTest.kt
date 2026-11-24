@@ -24,6 +24,7 @@ import org.prauga.assistant.intent.IntentEngine
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PlatformGate
 import org.prauga.assistant.intent.Resolution
+import org.prauga.assistant.understanding.Lexicon
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -43,7 +44,14 @@ class ContextHandlersTest {
         }
     private val intents =
         IntentEngine(
-            ContextHandlers.create(context, engine, readiness, vocabulary, grants),
+            ContextHandlers.create(
+                context,
+                Lexicon.english(),
+                engine,
+                readiness,
+                vocabulary,
+                grants,
+            ),
             object : PlatformGate {
                 override val sdkInt = 35
 

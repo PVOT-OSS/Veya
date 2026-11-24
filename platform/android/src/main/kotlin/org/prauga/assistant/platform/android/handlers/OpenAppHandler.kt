@@ -13,13 +13,16 @@ import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.IntentParameter
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.ActivityLauncher
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
-class OpenAppHandler(private val context: Context, private val launcher: ActivityLauncher) :
-    IntentHandler {
+class OpenAppHandler(
+    private val context: Context,
+    private val launcher: ActivityLauncher,
+    lexicon: Lexicon,
+) : IntentHandler {
     override val descriptor =
         IntentDescriptor(
             ID,
@@ -27,11 +30,7 @@ class OpenAppHandler(private val context: Context, private val launcher: Activit
             parameters = listOf(IntentParameter(APP, required = true)),
         )
 
-    private val matcher =
-        PatternMatcher(
-            ID,
-            listOf(rule("(open|launch|start|run)( the)?( (?<app>.+?))?( app)?", 0.8f, APP)),
-        )
+    private val matcher = PatternMatcher.from(ID, lexicon.phrases(ID))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 

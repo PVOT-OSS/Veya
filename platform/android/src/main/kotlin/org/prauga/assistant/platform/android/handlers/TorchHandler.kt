@@ -12,11 +12,12 @@ import org.prauga.assistant.intent.IntentHandler
 import org.prauga.assistant.intent.IntentMatch
 import org.prauga.assistant.intent.IntentOutcome
 import org.prauga.assistant.intent.PatternMatcher
-import org.prauga.assistant.intent.PatternMatcher.Companion.rule
 import org.prauga.assistant.intent.Utterance
 import org.prauga.assistant.platform.android.R
+import org.prauga.assistant.understanding.Lexicon
 
-class TorchHandler(private val context: Context, private val on: Boolean) : IntentHandler {
+class TorchHandler(private val context: Context, lexicon: Lexicon, private val on: Boolean) :
+    IntentHandler {
     private val id = if (on) ID_ON else ID_OFF
 
     override val descriptor =
@@ -25,22 +26,7 @@ class TorchHandler(private val context: Context, private val on: Boolean) : Inte
             context.getString(if (on) R.string.intent_torch_on else R.string.intent_torch_off),
         )
 
-    private val matcher: PatternMatcher =
-        PatternMatcher(
-            id,
-            listOf(
-                rule("(turn|switch) $state (the )?$LIGHT", 0.95f),
-                rule("(turn|switch) (the )?$LIGHT $state", 0.95f),
-                rule("$LIGHT $state", 0.9f),
-                rule(
-                    if (on) "(enable|start) (the )?$LIGHT" else "(disable|stop) (the )?$LIGHT",
-                    0.9f,
-                ),
-            ),
-        )
-
-    private val state: String
-        get() = if (on) "on" else "off"
+    private val matcher: PatternMatcher = PatternMatcher.from(id, lexicon.phrases(id))
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
@@ -65,6 +51,5 @@ class TorchHandler(private val context: Context, private val on: Boolean) : Inte
     companion object {
         const val ID_ON = "device.torch.on"
         const val ID_OFF = "device.torch.off"
-        private const val LIGHT = "(flashlight|flash light|torch)"
     }
 }

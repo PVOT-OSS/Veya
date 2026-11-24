@@ -10,13 +10,14 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class TimesTest {
+    private val times = Times(Lexicon.english())
     private val now = ZonedDateTime.of(2026, 11, 24, 10, 15, 0, 0, ZoneOffset.UTC)
 
     private fun at(day: Int, hour: Int, minute: Int = 0) =
         ZonedDateTime.of(2026, 11, day, hour, minute, 0, 0, ZoneOffset.UTC)
 
     private fun check(text: String, expected: ZonedDateTime, dateGiven: Boolean) {
-        val parsed = Times.parse(text, now)
+        val parsed = times.parse(text, now)
         assertEquals(text, expected, parsed?.at)
         assertEquals(text, dateGiven, parsed?.dateGiven)
     }
@@ -82,6 +83,6 @@ class TimesTest {
                 "tomorrow at the cinema",
                 "at 5 and 6",
             )
-            .forEach { assertNull(it, Times.parse(it, now)) }
+            .forEach { assertNull(it, times.parse(it, now)) }
     }
 }
