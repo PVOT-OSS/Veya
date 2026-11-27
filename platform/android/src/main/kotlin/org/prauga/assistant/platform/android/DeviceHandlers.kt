@@ -16,6 +16,7 @@ import org.prauga.assistant.platform.android.handlers.DateMathHandler
 import org.prauga.assistant.platform.android.handlers.DeviceInfoHandler
 import org.prauga.assistant.platform.android.handlers.OpenAppHandler
 import org.prauga.assistant.platform.android.handlers.OpenSettingsHandler
+import org.prauga.assistant.platform.android.handlers.SmallTalkHandler
 import org.prauga.assistant.platform.android.handlers.TimeHandler
 import org.prauga.assistant.platform.android.handlers.TorchHandler
 import org.prauga.assistant.understanding.Lexicon
@@ -42,6 +43,6 @@ object DeviceHandlers {
             DateMathHandler(context, lexicon, until = false),
             CalendarHandler(context, lexicon, calendar, next = true),
             CalendarHandler(context, lexicon, calendar, next = false),
-        )
+        ) + SmallTalkHandler.all(context, lexicon)
     }
 }

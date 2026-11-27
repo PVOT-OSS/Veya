@@ -204,4 +204,21 @@ class DeviceHandlersTest {
             )
         assertTrue(denied.resolve("what's my next meeting") is Resolution.NeedsPermission)
     }
+
+    @Test
+    fun answersSmallTalk() {
+        assertEquals("talk.greeting", intentOf("Hii"))
+        assertEquals("talk.greeting", intentOf("heyyy veya"))
+        assertEquals("talk.greeting", intentOf("good morning"))
+        assertEquals("talk.thanks", intentOf("thanks!"))
+        assertEquals("talk.identity", intentOf("who are you?"))
+        assertEquals("talk.help", intentOf("what can you do"))
+        assertEquals("talk.wellbeing", intentOf("how are you"))
+        assertEquals("talk.goodbye", intentOf("bye"))
+        assertEquals("app.open", intentOf("open camera"))
+        assertEquals(Resolution.NoMatch, engine.resolve("hi can you tell me a joke about cats"))
+        val greeting = (engine.resolve("hello") as Resolution.Matched).candidate
+        val reply = runBlocking { greeting.handler.execute(greeting.match) as IntentOutcome.Reply }
+        assertTrue(reply.text, reply.text.contains("set a timer"))
+    }
 }

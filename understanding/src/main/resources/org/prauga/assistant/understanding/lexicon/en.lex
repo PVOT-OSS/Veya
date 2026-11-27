@@ -668,3 +668,34 @@ ago | before today
 0.95 (am i|are we) (free|busy) {subject}
 0.9 (my )?(calendar|schedule|agenda) {subject}
 
+# ---------------------------------------------------------------------------------------------
+# Small talk: whole-sentence matches only, so "hi, set a timer" still reaches the timer
+# ---------------------------------------------------------------------------------------------
+
+[words talk.name]
+veya | there | buddy | friend
+
+[intent talk.greeting]
+0.95 (hi+|hey+|hello+|hel+o+|hiya|howdy|yo+|sup|good (morning|afternoon|evening|day)|greetings)( <talk.name>)?
+0.9 (what's up|whats up|wassup)( <talk.name>)?
+
+[intent talk.thanks]
+0.95 (thanks|thank you|thx|ty|cheers|thanks a lot|thank you so much|much appreciated)( <talk.name>)?
+0.9 (great|awesome|perfect|nice|cool|ok thanks|okay thanks)
+
+[intent talk.identity]
+0.95 (who|what) are you
+0.95 (what's|what is) your name
+0.95 (who made you|who built you|who created you)
+0.9 (are you|is this) (a bot|an ai|a robot|human)
+
+[intent talk.help]   # "can you" is a filler, so "what can you do" arrives as "what do"
+0.95 (help|help me|what do|what can you do|what do you do|what can i (ask|say)|how do (you|i) (work|use you|use this))
+0.95 (show me )?(what|which) (commands|things) (can|do) (you|i) (do|use|say)
+
+[intent talk.wellbeing]
+0.95 (how are you|how're you|how are you doing|how's it going|how is it going|you ok|you good)( <talk.name>)?
+
+[intent talk.goodbye]
+0.95 (bye+|goodbye|good night|see you|see ya|later|cya)( <talk.name>)?
+
