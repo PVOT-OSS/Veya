@@ -23,6 +23,8 @@ class BatteryHandler(private val context: Context, lexicon: Lexicon) : IntentHan
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val status = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val level = status?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1

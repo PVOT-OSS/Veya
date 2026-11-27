@@ -36,6 +36,21 @@ class IntentEngine(
         return check(top)
     }
 
+    /** Up to [limit] intents [text] comes close to, closest first; for when nothing matched. */
+    fun suggest(text: String, limit: Int = SUGGESTIONS): List<Candidate> {
+        val utterance = Utterance(text, fillers)
+        if (utterance.normalized.isEmpty()) return emptyList()
+        return handlers
+            .mapNotNull { handler ->
+                handler.closeness(utterance).takeIf { it >= MIN_CLOSENESS }?.let { handler to it }
+            }
+            .sortedByDescending { it.second }
+            .take(limit)
+            .map { (handler, score) ->
+                Candidate(handler, IntentMatch(handler.descriptor.id, score))
+            }
+    }
+
     fun resolve(intentId: String, entities: Map<String, String>): Resolution {
         val handler =
             handlers.firstOrNull { it.descriptor.id == intentId } ?: return Resolution.NoMatch
@@ -59,6 +74,8 @@ class IntentEngine(
     companion object {
         const val DEFAULT_ACCEPT_THRESHOLD = 0.6f
         const val DEFAULT_AMBIGUITY_MARGIN = 0.1f
+        const val SUGGESTIONS = 3
+        const val MIN_CLOSENESS = 0.5f
     }
 }
 

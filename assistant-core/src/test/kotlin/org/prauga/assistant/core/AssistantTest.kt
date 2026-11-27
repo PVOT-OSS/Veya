@@ -171,4 +171,29 @@ class AssistantTest {
         val changedMind = assistant.answer(id, missing.choice, "length", "battery").toList()
         assertEquals("battery ok", (changedMind[1] as AssistantEvent.Reply).text)
     }
+
+    @Test
+    fun suggestsCloseCommandsWhenNothingMatches() = runTest {
+        val alarm = handler("alarm", "(set|create) (an )?alarm( for (?<time>.+))?")
+        val assistant =
+            Assistant(
+                IntentEngine(
+                    listOf(
+                        object : IntentHandler by alarm {
+                            override fun closeness(utterance: Utterance) =
+                                if ("alrm" in utterance.normalized) 1f else 0f
+                        }
+                    ),
+                    object : PlatformGate {
+                        override val sdkInt = 36
+
+                        override fun isGranted(permission: String) = true
+                    },
+                ),
+                store,
+            )
+        val events = assistant.submit(null, "pls set alrm").toList()
+        assertEquals(AssistantEvent.Unanswered(UnansweredReason.NO_LOCAL_MODEL), events[1])
+        assertEquals("alarm", (events[2] as AssistantEvent.Clarify).choices.single().intentId)
+    }
 }

@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.prauga.assistant.intent.PatternMatcher.Companion.rule
+import org.prauga.assistant.understanding.Lexicon
 
 class IntentEngineTest {
     private val battery =
@@ -113,4 +114,39 @@ class IntentEngineTest {
     fun rejectsDuplicateIds() {
         IntentEngine(listOf(battery, battery), FakeGate())
     }
+
+    @Test
+    fun suggestsTheClosestPhrasesIncludingOneTypo() {
+        val phrases =
+            Lexicon.parse(
+                """
+                [intent alarm]
+                0.95 (set|create)( an)? alarm( for {time})?
+                [intent torch]
+                0.95 (turn|switch) on (the )?(flashlight|torch)
+                """
+                    .trimIndent()
+            )
+        val alarm = MatcherHandler("alarm", PatternMatcher.from("alarm", phrases.phrases("alarm")))
+        val torch = MatcherHandler("torch", PatternMatcher.from("torch", phrases.phrases("torch")))
+        val engine = IntentEngine(listOf(alarm, torch), FakeGate())
+        assertEquals(Resolution.NoMatch, engine.resolve("can u set alrm"))
+        assertEquals(listOf("alarm"), engine.suggest("can u set alrm").map { it.match.intentId })
+        assertEquals(
+            listOf("torch"),
+            engine.suggest("turn on the lights").map { it.match.intentId },
+        )
+        assertEquals(emptyList<Candidate>(), engine.suggest("tell me a joke"))
+    }
+}
+
+private class MatcherHandler(id: String, private val matcher: PatternMatcher) : IntentHandler {
+    override val descriptor = IntentDescriptor(id, id)
+
+    override fun match(utterance: Utterance) = matcher.match(utterance)
+
+    override fun closeness(utterance: Utterance) = matcher.closeness(utterance)
+
+    override suspend fun execute(match: IntentMatch): IntentOutcome =
+        IntentOutcome.Reply(match.intentId)
 }

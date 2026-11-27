@@ -73,6 +73,8 @@ abstract class CapabilityCommand(
         else found.copy(entities = found.entities + (SUBJECT to subject))
     }
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val subject = match.entities[SUBJECT]
         var refusal: Refusal? = null

@@ -21,6 +21,8 @@ class DeviceInfoHandler(private val context: Context, lexicon: Lexicon) : Intent
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome =
         IntentOutcome.Reply(
             context.getString(

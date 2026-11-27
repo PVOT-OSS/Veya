@@ -37,6 +37,8 @@ class OpenAppHandler(
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val query = match.entities[APP].orEmpty()
         val app = AppMatcher.best(query, launchableApps())

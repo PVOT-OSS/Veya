@@ -25,7 +25,7 @@
     <string name="suggestion_time">What time is it?</string>
     <string name="suggestion_open_camera">Open Camera</string>
 
-    <string name="unanswered">I can only handle device commands so far. Open questions need an on-device language model, which Veya doesn\'t have yet.</string>
+    <string name="unanswered">I didn\'t catch that. If it\'s one of the suggestions below, tap it, or ask “what can you do”.</string>
     <string name="clarify_title">Which did you mean?</string>
     <string name="missing_detail">“%1$s” needs one more detail. Ask again with it included.</string>
     <string name="permission_title">“%1$s” needs your permission</string>

@@ -28,6 +28,8 @@ class DateHandler(
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val locale = context.resources.configuration.locales[0]
         val pattern = DateFormat.getBestDateTimePattern(locale, "EEEEdMMMMy")

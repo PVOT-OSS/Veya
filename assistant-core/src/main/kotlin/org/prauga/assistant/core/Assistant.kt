@@ -31,7 +31,7 @@ class Assistant(
         val id = conversationId ?: store.startConversation(trimmed.take(TITLE_LENGTH), clock())
         emit(AssistantEvent.TurnStarted(id))
         store.append(id, StoredMessage(MessageKind.USER, trimmed, clock()))
-        respond(id, engines().resolve(trimmed), started)
+        respond(id, engines().resolve(trimmed), started, trimmed)
     }
 
     /**
@@ -54,7 +54,7 @@ class Assistant(
         val resolution =
             if (fresh != Resolution.NoMatch) fresh
             else engine.resolve(choice.intentId, choice.entities + (parameter to trimmed))
-        respond(conversationId, resolution, started)
+        respond(conversationId, resolution, started, trimmed)
     }
 
     fun choose(conversationId: String, choice: IntentChoice): Flow<AssistantEvent> = flow {
@@ -67,6 +67,7 @@ class Assistant(
         conversationId: String,
         resolution: Resolution,
         started: Long,
+        asked: String? = null,
     ) {
         when (resolution) {
             is Resolution.Matched -> execute(conversationId, resolution.candidate, started)
@@ -89,6 +90,8 @@ class Assistant(
             Resolution.NoMatch -> {
                 store.append(conversationId, StoredMessage(MessageKind.UNANSWERED, "", clock()))
                 emit(AssistantEvent.Unanswered(UnansweredReason.NO_LOCAL_MODEL))
+                val close = asked?.let { engines().suggest(it) }.orEmpty()
+                if (close.isNotEmpty()) emit(AssistantEvent.Clarify(close.map { it.toChoice() }))
             }
         }
     }

@@ -30,6 +30,8 @@ class TorchHandler(private val context: Context, lexicon: Lexicon, private val o
 
     override fun match(utterance: Utterance): IntentMatch? = matcher.match(utterance)
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val cameras = context.getSystemService(CameraManager::class.java)
         return try {

@@ -9,6 +9,12 @@ interface IntentHandler {
     fun match(utterance: Utterance): IntentMatch?
 
     suspend fun execute(match: IntentMatch): IntentOutcome
+
+    /**
+     * How close [utterance] comes to this intent when nothing matched, from 0 (unrelated) to 1 (all
+     * its key words present); used only to suggest what the user may have meant.
+     */
+    fun closeness(utterance: Utterance): Float = 0f
 }
 
 data class IntentDescriptor(

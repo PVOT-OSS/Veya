@@ -48,6 +48,8 @@ class DateMathHandler(
         return found.copy(entities = mapOf(SUBJECT to original(utterance.raw, subject)))
     }
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val subject = match.entities[SUBJECT].orEmpty()
         val now = ZonedDateTime.now(clock)

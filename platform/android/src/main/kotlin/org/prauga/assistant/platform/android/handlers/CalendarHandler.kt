@@ -51,6 +51,8 @@ class CalendarHandler(
         return found.takeIf { dates.parse(subject, ZonedDateTime.now(clock)) != null }
     }
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val now = ZonedDateTime.now(clock)
         return if (next) nextEvent(now) else day(now, match.entities[SUBJECT])

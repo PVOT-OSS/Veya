@@ -29,6 +29,8 @@ class ConvertHandler(private val context: Context, lexicon: Lexicon) : IntentHan
         return found.takeIf { units.convert(source, target) != null }
     }
 
+    override fun closeness(utterance: Utterance): Float = matcher.closeness(utterance)
+
     override suspend fun execute(match: IntentMatch): IntentOutcome {
         val source = match.entities[SOURCE].orEmpty()
         val target = match.entities[TARGET].orEmpty()
